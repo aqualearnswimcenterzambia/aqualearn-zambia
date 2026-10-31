@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    .card-box {
+        background: white;
+        border: 1px solid rgba(23, 162, 184, 0.15);
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(4, 42, 54, 0.05);
+        transition: all 0.3s ease;
+    }
+    .card-box:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(4, 42, 54, 0.1);
+    }
+    .hero-banner {
+        background: linear-gradient(135deg, rgba(4, 42, 54, 0.9), rgba(8, 76, 97, 0.85)), 
+                    url("{{ url_for('static', filename='images/hero-bg.jpg.jpeg') }}") center/cover no-repeat;
+        border-radius: 20px;
+        color: white;
+        padding: 60px 40px;
+        margin-bottom: 40px;
+    }
+    .feature-card {
+        background: white;
+        border: 1px solid rgba(23, 162, 184, 0.2);
+        border-radius: 16px;
+        padding: 30px 20px;
+        text-align: center;
+        height: 100%;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.04);
+        transition: transform 0.3s ease;
+    }
+    .feature-card:hover {
+        transform: translateY(-5px);
+    }
+    .feature-icon {
+        width: 70px;
+        height: 70px;
+        background: rgba(23, 162, 184, 0.1);
+        color: var(--accent-cyan);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        font-size: 1.8rem;
+    }
+    .img-grid-item {
+        border-radius: 12px;
+        height: 220px;
+        object-fit: cover;
+        width: 100%;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    }
+</style>
+
+<!-- Hero / Welcome Banner matching your mockup header -->
+<div class="hero-banner shadow-sm">
+    <span class="badge bg-info text-white mb-2 px-3 py-1 rounded-pill">Millennium Village, Lusaka</span>
+    <h1 class="brand-font fw-bold display-5 mb-2">Aqualearn Swim Center</h1>
+    <p class="lead mb-4 opacity-90" style="max-width: 600px; font-weight: 300;">
+       Life is better when you are swimming! Take the plunge for fitness and fun with professional coaching. .
+    </p>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-info text-white px-4 py-2 fw-bold rounded-pill shadow">
+        <i class="fa-solid fa-calendar-check me-2"></i>Book a Class Now
+    </a>
+</div>
+
+<!-- Why Choose Aqualearn Section (Vertical Feature Cards as requested) -->
+<div id="programs" class="mb-5">
+    <div class="text-center mb-4">
+        <h2 class="brand-font fw-bold text-dark">Why Choose Aqualearn?</h2>
+        <div class="mx-auto mt-2" style="width: 50px; height: 3px; background: var(--accent-cyan);"></div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fa-solid fa-baby"></i></div>
+                <h5 class="brand-font fw-bold mb-3" style="color: var(--dark-teal);">BABY & TODDLER</h5>
+                <p class="text-muted small mb-0">safety is our main prioty, eqipting them with water confendence and savival skills.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fa-solid fa-child-swimming"></i></div>
+                <h5 class="brand-font fw-bold mb-3" style="color: var(--dark-teal);">KIDS LEARN-TO-SWIM</h5>
+                <p class="text-muted small mb-0">Stroke development, essential water safety, and confidence building under expert guidance.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fa-solid fa-person-swimming"></i></div>
+                <h5 class="brand-font fw-bold mb-3" style="color: var(--dark-teal);">DEVELOPMENTAL AND ADVANCE</h5>
+                <p class="text-muted small mb-0">Lap swimming, stroke correction, and intensive cardio workouts tailored to your goals.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Distributed Photos Section (Instead of dumping them all in one cluttered place) -->
+<div class="mb-5">
+    <div class="text-center mb-4">
+        <h3 class="brand-font fw-bold text-dark">Glimpses of Our Pool & Training</h3>
+    </div>
+    <div class="row g-3">
+        {% for item in gallery[:3] %}
+        <div class="col-md-4">
+            <img src="{{ url_for('static', filename='images/' + item.filename) }}" alt="{{ item.title }}" class="img-grid-item">
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Contact / Location Section -->
+<div id="contact" class="card card-box p-4">
+    <div class="row align-items-center">
+        <div class="col-md-6">
+            <h4 class="brand-font fw-bold mb-3" style="color: var(--dark-teal);">Get In Touch</h4>
+            <p class="text-muted small mb-2"><i class="fa-solid fa-map-marker-alt text-info me-2"></i><strong>Location:</strong> Millennium Village, Lusaka</p>
+            <p class="text-muted small mb-0"><i class="fa-brands fa-whatsapp text-success me-2"></i><strong>Coach Gideon:</strong> 0972810511</p>
+        </div>
+        <div class="col-md-6 text-md-end mt-3 mt-md-0">
+            <a href="https://wa.me/260972810511" target="_blank" class="btn btn-success rounded-pill px-4 fw-bold">
+                <i class="fa-brands fa-whatsapp me-2"></i>Chat on WhatsApp
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

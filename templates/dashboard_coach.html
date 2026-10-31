@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="card p-4 mb-4 border-0 text-white rounded-4 shadow" style="background: linear-gradient(135deg, #084c61, #17a2b8);">
+        <h2 class="brand-font fw-bold mb-1">Coach Portal: {{ current_user.username }}</h2>
+        <p class="mb-0 opacity-90">Log your clients coached today and calculate expected earnings.</p>
+    </div>
+
+    <div class="row g-4">
+        <!-- Add Client Log Form -->
+        <div class="col-lg-5">
+            <div class="card p-4 border-0 rounded-4 shadow-sm bg-white">
+                <h5 class="brand-font fw-bold mb-3" style="color: var(--dark-teal);">Log Client Coached</h5>
+                <form method="POST" action="{{ url_for('coach_add_entry') }}">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Select Client</label>
+                        <select name="client_name" class="form-select" required>
+                            {% for c in clients %}
+                            <option value="{{ c.username }}">{{ c.username }} (Phone: {{ c.phone }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Time Coached</label>
+                        <input type="text" name="session_time" class="form-control" placeholder="e.g. 10:00 AM - 10:45 AM" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold">Expected Pay (Kwacha)</label>
+                        <input type="number" step="0.01" name="amount_expected" class="form-control" placeholder="e.g. 20" required>
+                    </div>
+                    <button type="submit" class="btn btn-info text-white w-100 py-3 fw-bold rounded-pill shadow-sm">+ Add Entry</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Today's Coaching Logs & Live Total -->
+        <div class="col-lg-7">
+            <div class="card p-4 border-0 rounded-4 shadow-sm bg-white">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="brand-font fw-bold mb-0" style="color: var(--dark-teal);">Today's Entries</h5>
+                    <span class="badge bg-success fs-6 rounded-pill px-3 py-2">Total Expected: K{{ "%.2f"|format(day_total) }}</span>
+                </div>
+
+                {% if logs %}
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Client</th>
+                                <th>Time</th>
+                                <th>Amount Expected</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in logs %}
+                            <tr>
+                                <td class="fw-bold text-dark">{{ log.client_name }}</td>
+                                <td>{{ log.session_time }}</td>
+                                <td class="text-success fw-bold">K{{ "%.2f"|format(log.amount_expected) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted small py-4 text-center mb-0">No client entries added yet for today.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,241 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    /* Full height layout wrapper */
+    .dashboard-wrapper {
+        display: flex;
+        min-height: 100vh;
+        background: #f4f8fb;
+    }
+
+    /* Left-Aligned Vertical Sidebar */
+    .dashboard-sidebar {
+        width: 270px;
+        background: linear-gradient(180deg, var(--dark-teal) 0%, var(--primary-teal) 100%);
+        color: white;
+        padding: 35px 20px;
+        flex-shrink: 0;
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.12);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .sidebar-brand {
+        font-family: 'Cinzel', serif;
+        font-weight: 700;
+        font-size: 1.5rem;
+        color: white;
+        text-decoration: none;
+        letter-spacing: 1px;
+    }
+
+    .sidebar-nav {
+        margin-top: 40px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .sidebar-link {
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+        padding: 14px 20px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        transition: all 0.3s ease;
+    }
+
+    .sidebar-link:hover {
+        background: rgba(23, 162, 184, 0.2);
+        color: white;
+    }
+
+    .sidebar-link.active-tab {
+        background: var(--accent-cyan);
+        color: white;
+        box-shadow: 0 4px 15px rgba(23, 162, 184, 0.4);
+    }
+
+    /* Main Content Area */
+    .dashboard-content {
+        flex-grow: 1;
+        padding: 40px 50px;
+        overflow-y: auto;
+    }
+
+    /* Banner Banner Header */
+    .banner-card {
+        background: linear-gradient(135deg, rgba(4, 42, 54, 0.9), rgba(8, 76, 97, 0.85)), 
+                    url("{{ url_for('static', filename='images/hero-bg.jpg.jpeg') }}") center/cover no-repeat;
+        border-radius: 20px;
+        padding: 45px 40px;
+        color: white;
+        box-shadow: 0 10px 30px rgba(4, 42, 54, 0.12);
+    }
+
+    /* High-Resolution Vertical Feature Cards */
+    .vertical-feature-card {
+        background: rgba(255, 255, 255, 0.98);
+        border: 1px solid rgba(23, 162, 184, 0.2);
+        border-radius: 22px;
+        padding: 45px 30px;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(4, 42, 54, 0.06);
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 380px;
+    }
+
+    .vertical-feature-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 45px rgba(4, 42, 54, 0.16);
+        border-color: var(--accent-cyan);
+    }
+
+    .icon-circle-lg {
+        width: 90px;
+        height: 90px;
+        border-radius: 50%;
+        background: rgba(23, 162, 184, 0.1);
+        color: var(--accent-cyan);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 25px;
+        font-size: 2.3rem;
+        transition: all 0.3s ease;
+    }
+
+    .vertical-feature-card:hover .icon-circle-lg {
+        background: var(--accent-cyan);
+        color: white;
+        transform: scale(1.08);
+    }
+
+    .card-title-custom {
+        font-family: 'Cinzel', serif;
+        color: var(--dark-teal);
+        font-weight: 700;
+        font-size: 1.3rem;
+        margin-bottom: 15px;
+        letter-spacing: 0.5px;
+    }
+
+    .card-text-custom {
+        color: #5a6e79;
+        font-size: 0.95rem;
+        line-height: 1.7;
+        margin: 0;
+    }
+</style>
+
+<div class="dashboard-wrapper">
+    <!-- 1. Left Side Vertical Sidebar -->
+    <aside class="dashboard-sidebar">
+        <div>
+            <div class="mb-4">
+                <a href="{{ url_for('home') }}" class="sidebar-brand d-block">
+                    <i class="fa-solid fa-water text-info me-2"></i>Aqualearn
+                </a>
+                <span class="badge bg-info text-white rounded-pill px-3 py-1 mt-2 small">Member Portal</span>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('dashboard') }}" class="sidebar-link active-tab">
+                    <i class="fa-solid fa-house"></i> HOME
+                </a>
+                <a href="{{ url_for('home') }}#services" class="sidebar-link">
+                    <i class="fa-solid fa-layer-group"></i> Our Programs
+                </a>
+                <a href="{{ url_for('home') }}#book-session" class="sidebar-link">
+                    <i class="fa-solid fa-calendar-check"></i> Book a Class
+                </a>
+                <a href="{{ url_for('home') }}#location" class="sidebar-link">
+                    <i class="fa-solid fa-envelope"></i> Contact Us
+                </a>
+            </nav>
+        </div>
+
+        <!-- User Info & Logout Button -->
+        <div class="pt-4 border-top border-secondary">
+            <div class="mb-3">
+                <p class="small text-light opacity-75 mb-0">Logged in as</p>
+                <h6 class="fw-bold text-white mb-0">{{ current_user.username }}</h6>
+            </div>
+            <a href="{{ url_for('logout') }}" class="btn btn-outline-light btn-sm w-100 rounded-pill fw-bold py-2">
+                <i class="fa-solid fa-right-from-bracket me-2"></i>Log Out
+            </a>
+        </div>
+    </aside>
+
+    <!-- 2. Main Content Area -->
+    <main class="dashboard-content">
+        <!-- Top Banner -->
+        <div class="banner-card mb-5">
+            <h1 class="brand-font fw-bold mb-2">Aqualearn Swim Center</h1>
+            <p class="lead mb-0 opacity-90" style="font-weight: 300;">
+                Life is better when you are swimming! Take the plunge for fitness and fun.
+            </p>
+        </div>
+
+        <!-- Section Heading -->
+        <div class="text-center mb-5">
+            <h2 class="brand-font fw-bold text-dark mb-2">Why Choose Aqualearn?</h2>
+            <div class="mx-auto" style="width: 60px; height: 3px; background: var(--accent-cyan); border-radius: 2px;"></div>
+        </div>
+
+        <!-- 3 High-Resolution Vertical Feature Cards -->
+        <div class="row g-4 justify-content-center">
+            
+            <!-- Card 1: Baby & Toddler -->
+            <div class="col-xl-4 col-md-6">
+                <div class="vertical-feature-card">
+                    <div class="icon-circle-lg">
+                        <i class="fa-solid fa-baby"></i>
+                    </div>
+                    <h4 class="card-title-custom">BABY & TODDLER:</h4>
+                    <p class="card-text-custom">
+                        Safe water acclimatization and early foundational survival skills.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Card 2: Kids Learn-To-Swim -->
+            <div class="col-xl-4 col-md-6">
+                <div class="vertical-feature-card">
+                    <div class="icon-circle-lg">
+                        <i class="fa-solid fa-child-swimming"></i>
+                    </div>
+                    <h4 class="card-title-custom">KIDS LEARN-TO-SWIM:</h4>
+                    <p class="card-text-custom">
+                        Stroke development, essential water safety, and confidence building.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Card 3: Adult Fitness -->
+            <div class="col-xl-4 col-md-6">
+                <div class="vertical-feature-card">
+                    <div class="icon-circle-lg">
+                        <i class="fa-solid fa-person-swimming"></i>
+                    </div>
+                    <h4 class="card-title-custom">ADULT FITNESS:</h4>
+                    <p class="card-text-custom">
+                        Lap swimming, stroke correction, and intensive cardio workouts.
+                    </p>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+{% endblock %}

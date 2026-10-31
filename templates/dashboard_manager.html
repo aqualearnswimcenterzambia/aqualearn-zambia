@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="card p-4 mb-4 border-0 text-white rounded-4 shadow" style="background: linear-gradient(135deg, #042a36, #084c61);">
+        <h2 class="brand-font fw-bold mb-1">Head Coach & Manager Command Center</h2>
+        <p class="mb-0 opacity-75">Live oversight for client session counts and coach payments.</p>
+    </div>
+
+    <!-- 1. Client Session Overview -->
+    <div class="card p-4 border-0 rounded-4 shadow-sm bg-white mb-5">
+        <h5 class="brand-font fw-bold mb-3" style="color: var(--dark-teal);">Client Session Tracking</h5>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Client Name</th>
+                        <th>Phone</th>
+                        <th>Package</th>
+                        <th>Remaining Sessions</th>
+                        <th>Actions (Add / Subtract)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in clients %}
+                    <tr>
+                        <td class="fw-bold">{{ c.username }}</td>
+                        <td>{{ c.phone }}</td>
+                        <td>{{ c.package_name }}</td>
+                        <td><span class="badge bg-info fs-6 px-3">{{ c.remaining_sessions }} Left</span></td>
+                        <td>
+                            <form method="POST" action="{{ url_for('adjust_sessions', user_id=c.id) }}" class="d-inline-flex gap-2">
+                                <button type="submit" name="action" value="add" class="btn btn-outline-success btn-sm fw-bold">+ Add 1</button>
+                                <button type="submit" name="action" value="subtract" class="btn btn-outline-danger btn-sm fw-bold">- Subtract 1</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 2. Coach Coaching & Payment Logs -->
+    <div class="card p-4 border-0 rounded-4 shadow-sm bg-white">
+        <h5 class="brand-font fw-bold mb-3" style="color: var(--dark-teal);">Coach Payroll Logs</h5>
+        {% if logs %}
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Coach</th>
+                        <th>Client Coached</th>
+                        <th>Time</th>
+                        <th>Date</th>
+                        <th>Amount Expected</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr>
+                        <td class="fw-bold text-info"><i class="fa-solid fa-user-tie me-1"></i> {{ log.coach.username }}</td>
+                        <td>{{ log.client_name }}</td>
+                        <td>{{ log.session_time }}</td>
+                        <td>{{ log.date_logged }}</td>
+                        <td class="fw-bold text-success">K{{ "%.2f"|format(log.amount_expected) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted small mb-0">No coach payroll logs submitted yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
