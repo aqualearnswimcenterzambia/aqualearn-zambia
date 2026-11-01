@@ -23,7 +23,13 @@ def inject_user():
 
 @app.route('/')
 def home():
-    return render_template('index.html', gallery=[])
+    gallery = [
+        "https://images.unsplash.com/photo-1530549387789-4c1017266635?auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1600965962361-9035dbfd1c87?auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1519315351827-04664fbddb3a?auto=format&fit=crop&w=800&q=80"
+    ]
+    return render_template('index.html', gallery=gallery)
 
 @app.route('/dashboard')
 def dashboard():
@@ -40,8 +46,9 @@ def dashboard():
             return render_template('dashboard_coach.html', user=user, clients=clients, logs=logs, day_total=day_total)
         elif user.role == 'manager':
             clients = User.query.filter_by(role='client').all()
+            coaches = User.query.filter_by(role='coach').all()
             logs = CoachLog.query.order_by(CoachLog.id.desc()).all()
-            return render_template('dashboard_manager.html', user=user, clients=clients, logs=logs)
+            return render_template('dashboard_manager.html', user=user, clients=clients, coaches=coaches, logs=logs)
         else:
             attendances = Attendance.query.filter_by(user_id=user.id).order_by(Attendance.id.desc()).all()
             return render_template('dashboard_client.html', user=user, attendances=attendances)
@@ -112,6 +119,23 @@ def adjust_sessions(user_id):
             flash(f'{client_user.username} has 0 remaining sessions.', 'warning')
             
     db.session.commit()
+    return redirect(url_for('dashboard'))
+
+@app.route('/delete-user/<int:user_id>', methods=['POST'])
+def delete_user(user_id):
+    user = User.query.get(session.get('user_id')) if 'user_id' in session else None
+    if not user or user.role != 'manager':
+        flash('Unauthorized access.', 'danger')
+        return redirect(url_for('login'))
+    
+    target_user = User.query.get_or_404(user_id)
+    if target_user.role == 'manager':
+        flash('Cannot delete manager accounts through this action.', 'warning')
+        return redirect(url_for('dashboard'))
+        
+    db.session.delete(target_user)
+    db.session.commit()
+    flash(f'Successfully deleted {target_user.username} ({target_user.role}).', 'success')
     return redirect(url_for('dashboard'))
 
 @app.route('/mark-attendance', methods=['POST'])
