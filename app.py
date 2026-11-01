@@ -16,6 +16,9 @@ db.init_app(app)
 from models import User, Attendance, CoachLog
 
 with app.app_context():
+    # Uncomment db.drop_all() ONCE to wipe the old broken tables, 
+    # then comment it back out after your first successful deployment if you want to preserve data.
+    db.drop_all() 
     db.create_all()
 
 @app.context_processor
