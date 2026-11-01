@@ -1,6 +1,6 @@
 import os
 import random
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, render_template_string, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import db, User
@@ -31,12 +31,30 @@ def dashboard():
         flash('Please log in first.', 'warning')
         return redirect(url_for('login'))
     
-    if user.role == 'coach':
-        return render_template('dashboard_coach.html')
-    elif user.role == 'manager':
-        return render_template('dashboard_manager.html')
-    else:
-        return render_template('dashboard_client.html')
+    try:
+        if user.role == 'coach':
+            return render_template('dashboard_coach.html')
+        elif user.role == 'manager':
+            return render_template('dashboard_manager.html')
+        else:
+            return render_template('dashboard_client.html')
+    except Exception:
+        # Bulletproof fallback if the template file doesn't exist yet
+        fallback_html = """
+        {% extends 'base.html' %}
+        {% block content %}
+        <div class="container mt-5">
+            <div class="card shadow p-4 text-center">
+                <h2>Welcome, {{ user.username }}!</h2>
+                <p class="text-muted">Role: <strong>{{ user.role | capitalize }}</strong></p>
+                <hr>
+                <p>Your dashboard template is being set up. You are successfully logged in!</p>
+                <a href="{{ url_for('logout') }}" class="btn btn-danger mt-3">Log Out</a>
+            </div>
+        </div>
+        {% endblock %}
+        """
+        return render_template_string(fallback_html, user=user)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
