@@ -11,4 +11,4 @@ class User(db.Model):
     package_name = db.Column(db.String(50), default='Basic')
     total_sessions = db.Column(db.Integer, default=10)
     remaining_sessions = db.Column(db.Integer, default=10)
-    reset_code = db.Column(db.String(6), nullable=True) # Added for password reset
+    reset_code = db.Column(db.String(6), nullable=True)

@@ -120,15 +120,12 @@ def forgot_password():
             flash('Phone number not found in our records.', 'danger')
             return render_template('forgot_password.html')
             
-        # Generate a random 6-digit verification code
         code = str(random.randint(100000, 999999))
         user.reset_code = code
         db.session.commit()
         
-        # Save phone in session to verify in the next step
         session['reset_phone'] = phone
         
-        # Displaying code via flash message (simulating SMS delivery)
         flash(f'Verification code sent to {phone}. [SIMULATED SMS CODE: {code}]', 'info')
         return redirect(url_for('reset_password'))
         
@@ -151,7 +148,6 @@ def reset_password():
             flash('Invalid verification code. Please try again.', 'danger')
             return render_template('reset_password.html')
             
-        # Update password and clear reset code
         user.password_hash = generate_password_hash(new_password)
         user.reset_code = None
         db.session.commit()
