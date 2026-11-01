@@ -10,14 +10,13 @@
             background-color: #f8f9fa;
             overflow-x: hidden;
         }
-        /* Sidebar styling */
         .sidebar {
             position: fixed;
             top: 0;
             left: 0;
             height: 100vh;
             width: 260px;
-            background: #0d6efd;
+            background: #0080ff;
             color: white;
             padding: 20px;
             display: flex;
@@ -43,7 +42,7 @@
             font-weight: 500;
         }
         .sidebar nav a:hover, .sidebar nav a.active {
-            background: rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.2);
             color: white;
         }
         .main-content {
@@ -51,7 +50,7 @@
             padding: 30px;
         }
         .hero-card {
-            background: linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url("{{ url_for('static', filename='images/hero-bg.jpg.jpeg') }}") center/cover no-repeat;
+            background: linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.25)), url("{{ url_for('static', filename='images/hero-bg.jpg.jpeg') }}") center/cover no-repeat;
             border-radius: 15px;
             color: white;
             padding: 80px 40px;
@@ -95,46 +94,60 @@
                 <a href="{{ url_for('register') }}" class="btn btn-info btn-lg text-dark fw-bold px-4 py-2 rounded-pill shadow">Book a Class Now</a>
             </div>
 
-            <!-- Why Choose Aqualearn Section -->
-            <div class="mb-5 text-center">
-                <h3 class="fw-bold text-primary mb-4">Why Choose Aqualearn?</h3>
+            <!-- Our Programs Section -->
+            <div id="programs" class="mb-5 text-center">
+                <h3 class="fw-bold text-primary mb-4">Our Programs</h3>
                 <div class="row g-4 text-start">
                     <div class="col-md-4">
-                        <div class="card border-0 shadow-sm h-100 p-3">
-                            <h5 class="fw-bold text-primary">Expert Coaching</h5>
-                            <p class="text-muted mb-0">Professional guidance tailored for all skill levels, from beginners to advanced swimmers.</p>
+                        <div class="card border-0 shadow-sm h-100 p-4 text-center">
+                            <h5 class="fw-bold text-primary mb-3">BABY & TODDLER</h5>
+                            <p class="text-muted small">Safety is our main priority, equipping them with water confidence and survival skills.</p>
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div class="card border-0 shadow-sm h-100 p-3">
-                            <h5 class="fw-bold text-primary">Structured Tracking</h5>
-                            <p class="text-muted mb-0">Easily monitor your session balances, attendance history, and daily coaching logs.</p>
+                        <div class="card border-0 shadow-sm h-100 p-4 text-center">
+                            <h5 class="fw-bold text-primary mb-3">KIDS LEARN-TO-SWIM</h5>
+                            <p class="text-muted small">Stroke development, essential water safety, and confidence building under expert guidance.</p>
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div class="card border-0 shadow-sm h-100 p-3">
-                            <h5 class="fw-bold text-primary">Prime Location</h5>
-                            <p class="text-muted mb-0">Conveniently situated at Millennium Village in Lusaka for hassle-free training sessions[cite: 6].</p>
+                        <div class="card border-0 shadow-sm h-100 p-4 text-center">
+                            <h5 class="fw-bold text-primary mb-3">DEVELOPMENTAL AND ADVANCE</h5>
+                            <p class="text-muted small">Lap swimming, stroke correction, and intensive cardio workouts tailored to your goals.</p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Local Photo Gallery Section -->
+            <!-- Glimpses of Our Pool & Training -->
             <div class="mb-5">
-                <h3 class="fw-bold text-primary mb-4 text-center">Our Training & Poolside Moments</h3>
+                <h3 class="fw-bold text-primary mb-4 text-center">Glimpses of Our Pool & Training</h3>
                 <div class="row g-4">
-                    {% if gallery %}
-                        {% for img_file in gallery %}
-                            <div class="col-md-3 col-sm-6">
-                                <div class="card shadow-sm border-0 h-100">
-                                    <img src="{{ url_for('static', filename=img_file) }}" class="card-img-top rounded" alt="Swim Center Photo" style="height: 200px; object-fit: cover;">
-                                </div>
-                            </div>
-                        {% endfor %}
-                    {% else %}
-                        <p class="text-center text-muted">Gallery photos coming soon!</p>
-                    {% endif %}
+                    <div class="col-md-4">
+                        <div class="card shadow-sm border-0 h-100">
+                            <img src="{{ url_for('static', filename='images/about-pool.jpg.jpeg') }}" class="card-img-top rounded" alt="Pool View" style="height: 220px; object-fit: cover;">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card shadow-sm border-0 h-100">
+                            <img src="{{ url_for('static', filename='images/splash-fun.jpg.jpeg') }}" class="card-img-top rounded" alt="Training Session" style="height: 220px; object-fit: cover;">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card shadow-sm border-0 h-100">
+                            <img src="{{ url_for('static', filename='images/water-smile.jpg.jpeg') }}" class="card-img-top rounded" alt="Poolside Moment" style="height: 220px; object-fit: cover;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Get In Touch Section -->
+            <div id="contact" class="card border-0 shadow-sm p-4 mb-4">
+                <h4 class="fw-bold text-primary mb-3">Get In Touch</h4>
+                <p class="mb-2">📍 <strong>Location:</strong> Millennium Village, Lusaka[cite: 5]</p>
+                <p class="mb-3">📞 <strong>Coach Gideon:</strong> 0972810511[cite: 5]</p>
+                <div>
+                    <a href="https://wa.me/260972810511" target="_blank" class="btn btn-success fw-bold px-4">💬 Chat on WhatsApp</a>
                 </div>
             </div>
         </div>
