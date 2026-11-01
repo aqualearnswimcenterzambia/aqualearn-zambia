@@ -42,10 +42,13 @@
                     {% endfor %}
                 {% endif %}
             {% endwith %}
+
             <div class="card-custom">
                 <h2 class="fw-bold mb-1">Manager Control Panel</h2>
                 <p class="text-muted mb-0">Administrator: <strong>{{ user.username }}</strong></p>
             </div>
+
+            <!-- Client & Swimmers Management -->
             <div class="card-custom">
                 <h4 class="fw-bold mb-3">Manage Client Accounts & Swimmers</h4>
                 {% if clients %}
@@ -104,6 +107,41 @@
                     <p class="text-muted mb-0">No registered client accounts found.</p>
                 {% endif %}
             </div>
+
+            <!-- Coaching Logs & Earnings Overview -->
+            <div class="card-custom">
+                <h4 class="fw-bold mb-3">Coach Activity & Daily Earnings Logs</h4>
+                {% if logs %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Coach ID / Account</th>
+                                    <th>Swimmer / Client Coached</th>
+                                    <th>Session Time</th>
+                                    <th>Amount Expected (ZMW)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in logs %}
+                                    <tr>
+                                        <td>{{ log.date_logged }}</td>
+                                        <td><span class="badge bg-secondary">Coach #{{ log.coach_id }}</span></td>
+                                        <td class="fw-semibold text-primary">{{ log.client_name }}</td>
+                                        <td>{{ log.session_time }}</td>
+                                        <td class="fw-bold text-success">K{{ "%.2f"|format(log.amount_expected) }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-0">No coaching logs recorded yet.</p>
+                {% endif %}
+            </div>
+
+            <!-- Registered Coaches List -->
             <div class="card-custom">
                 <h4 class="fw-bold mb-3">Registered Coaches</h4>
                 {% if coaches %}
@@ -135,6 +173,7 @@
                     <p class="text-muted mb-0">No registered coaches found.</p>
                 {% endif %}
             </div>
+
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
