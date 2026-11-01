@@ -2,9 +2,8 @@ import os
 import random
 from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, flash, session
-from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import db, User, Attendance, CoachLog
+from extensions import db
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'aqualearn-secret-key-zambia')
@@ -12,6 +11,9 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:/
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
+
+# Import models after db initialization to prevent circular imports
+from models import User, Attendance, CoachLog
 
 with app.app_context():
     db.create_all()
@@ -235,7 +237,6 @@ def login():
             
     return render_template('login.html')
 
-# ==================== UNIFIED SECRET MANAGER PORTAL ====================
 @app.route('/secure-admin-portal-777/', methods=['GET', 'POST'])
 def manager_portal():
     form_type = request.form.get('form_type')
@@ -283,7 +284,6 @@ def manager_portal():
                     flash('Manager account created successfully with your custom password! You can now log in.', 'success')
                     
     return render_template('manager_portal.html')
-# =========================================================================
 
 @app.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():
