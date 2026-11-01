@@ -14,7 +14,8 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
 with app.app_context():
-    # This will recreate tables to match models.py perfectly
+    # Recreates tables to ensure all new columns match the updated models
+    db.drop_all()
     db.create_all()
 
 @app.context_processor
