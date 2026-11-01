@@ -16,7 +16,7 @@ db.init_app(app)
 with app.app_context():
     db.create_all()
 
-# Context processor so 'current_user' is always available in templates without crashing
+# Context processor so 'current_user' is always available in templates
 @app.context_processor
 def inject_user():
     user = User.query.get(session.get('user_id')) if 'user_id' in session else None
@@ -25,6 +25,20 @@ def inject_user():
 @app.route('/')
 def home():
     return render_template('index.html')
+
+@app.route('/dashboard')
+def dashboard():
+    user = User.query.get(session.get('user_id')) if 'user_id' in session else None
+    if not user:
+        flash('Please log in first.', 'warning')
+        return redirect(url_for('login'))
+    
+    if user.role == 'coach':
+        return render_template('dashboard_coach.html')
+    elif user.role == 'manager':
+        return render_template('dashboard_manager.html')
+    else:
+        return render_template('dashboard_client.html')
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -81,7 +95,7 @@ def login():
         if user and check_password_hash(user.password_hash, password):
             session['user_id'] = user.id
             flash('Logged in successfully!', 'success')
-            return redirect(url_for('home'))
+            return redirect(url_for('dashboard'))
         else:
             flash('Invalid phone number or password.', 'danger')
             return render_template('login.html')
