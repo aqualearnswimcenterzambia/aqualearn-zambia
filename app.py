@@ -1,9 +1,9 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.exc import IntegrityError
-from models import db, User  # Assumes your database and User model are defined in models.py
+from models import db, User
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'aqualearn-secret-key-zambia')
@@ -15,6 +15,12 @@ db.init_app(app)
 # Ensure database tables are created within application context
 with app.app_context():
     db.create_all()
+
+# Context processor so 'current_user' is always available in templates without crashing
+@app.context_processor
+def inject_user():
+    user = User.query.get(session.get('user_id')) if 'user_id' in session else None
+    return dict(current_user=user)
 
 @app.route('/')
 def home():
@@ -73,13 +79,20 @@ def login():
         
         user = User.query.filter_by(phone=phone).first()
         if user and check_password_hash(user.password_hash, password):
+            session['user_id'] = user.id
             flash('Logged in successfully!', 'success')
-            return redirect(url_for('index'))
+            return redirect(url_for('home'))
         else:
             flash('Invalid phone number or password.', 'danger')
             return render_template('login.html')
             
     return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.pop('user_id', None)
+    flash('Logged out successfully.', 'success')
+    return redirect(url_for('home'))
 
 if __name__ == '__main__':
     app.run(debug=True)
