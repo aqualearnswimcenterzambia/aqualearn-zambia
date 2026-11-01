@@ -31,12 +31,23 @@ def dashboard():
         flash('Please log in first.', 'warning')
         return redirect(url_for('login'))
     
-    if user.role == 'coach':
-        return render_template('dashboard_coach.html')
-    elif user.role == 'manager':
-        return render_template('dashboard_manager.html')
-    else:
-        return render_template('dashboard_client.html')
+    try:
+        if user.role == 'coach':
+            return render_template('dashboard_coach.html', user=user)
+        elif user.role == 'manager':
+            return render_template('dashboard_manager.html', user=user)
+        else:
+            return render_template('dashboard_client.html', user=user)
+    except Exception as e:
+        # This will show us the exact error on your screen instead of a generic 500 page!
+        return f"""
+        <div style="padding: 40px; font-family: sans-serif; background: #fff3f3; color: #900;">
+            <h3>Template Rendering Error Caught:</h3>
+            <pre>{str(e)}</pre>
+            <p>Role was: <strong>{user.role}</strong></p>
+            <a href="{url_for('logout')}">Log Out</a>
+        </div>
+        """
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
