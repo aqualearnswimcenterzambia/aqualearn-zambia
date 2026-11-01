@@ -73,7 +73,7 @@
                                                 <td><span class="badge bg-info text-dark">{{ child.name }}</span></td>
                                                 <td><strong>{{ child.remaining_sessions }}</strong> / {{ child.total_sessions }}</td>
                                                 <td>
-                                                    <div class="d-flex gap-1">
+                                                    <div class="d-flex gap-1 align-items-center">
                                                         <form action="{{ url_for('adjust_child_sessions', child_id=child.id) }}" method="POST" class="d-inline">
                                                             <input type="hidden" name="action" value="add">
                                                             <button type="submit" class="btn btn-sm btn-outline-success">+1</button>
@@ -81,6 +81,9 @@
                                                         <form action="{{ url_for('adjust_child_sessions', child_id=child.id) }}" method="POST" class="d-inline">
                                                             <input type="hidden" name="action" value="subtract">
                                                             <button type="submit" class="btn btn-sm btn-outline-warning">-1</button>
+                                                        </form>
+                                                        <form action="{{ url_for('delete_user', user_id=client.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this client account and all their swimmers?');">
+                                                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
                                                         </form>
                                                     </div>
                                                 </td>
@@ -93,7 +96,7 @@
                                             <td><span class="text-muted">Individual Account</span></td>
                                             <td>N/A</td>
                                             <td>
-                                                <form action="{{ url_for('delete_user', user_id=client.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete account?');">
+                                                <form action="{{ url_for('delete_user', user_id=client.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete client account?');">
                                                     <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
                                                 </form>
                                             </td>
@@ -160,7 +163,7 @@
                                         <td class="fw-semibold">{{ coach.username }}</td>
                                         <td>{{ coach.phone }}</td>
                                         <td>
-                                            <form action="{{ url_for('delete_user', user_id=coach.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete coach?');">
+                                            <form action="{{ url_for('delete_user', user_id=coach.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete coach account?');">
                                                 <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
                                             </form>
                                         </td>
