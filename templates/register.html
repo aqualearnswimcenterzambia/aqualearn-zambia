@@ -28,7 +28,7 @@
                 {% endfor %}
             {% endif %}
         {% endwith %}
-        <form action="{{ url_for('register') }}" method="POST">
+        <form action="{{ url_for('register') }}" method="POST" id="registrationForm">
             <div class="mb-3">
                 <label for="username" class="form-label fw-semibold">Client / Parent / Guardian Full Name</label>
                 <input type="text" class="form-control" id="username" name="username" required placeholder="Enter full name">
@@ -58,7 +58,7 @@
                     <div class="child-box">
                         <div class="mb-2">
                             <label class="form-label small fw-semibold">Swimmer / Client Name</label>
-                            <input type="text" class="form-control form-control-sm" name="child_names[]" required placeholder="Enter swimmer full name">
+                            <input type="text" class="form-control form-control-sm swimmer-name-input" name="child_names[]" required placeholder="Enter swimmer full name">
                         </div>
                         <div>
                             <label class="form-label small fw-semibold">Select Sessions</label>
@@ -85,14 +85,21 @@
     <script>
         function toggleAccountType(role) {
             const childrenSection = document.getElementById('children_section');
+            const swimmerInputs = document.querySelectorAll('.swimmer-name-input');
+            
             if (role === 'coach') {
                 childrenSection.style.display = 'none';
+                swimmerInputs.forEach(input => input.removeAttribute('required'));
             } else {
                 childrenSection.style.display = 'block';
+                swimmerInputs.forEach(input => input.setAttribute('required', 'required'));
             }
         }
+
         function addChildField() {
             const container = document.getElementById('children_container');
+            const role = document.getElementById('role').value;
+            const isRequired = role === 'client' ? 'required' : '';
             const box = document.createElement('div');
             box.className = 'child-box';
             box.innerHTML = `
@@ -101,7 +108,7 @@
                     <button type="button" class="btn btn-sm text-danger p-0" onclick="this.parentElement.parentElement.remove()">Remove</button>
                 </div>
                 <div class="mb-2">
-                    <input type="text" class="form-control form-control-sm" name="child_names[]" required placeholder="Enter swimmer full name">
+                    <input type="text" class="form-control form-control-sm swimmer-name-input" name="child_names[]" ${isRequired} placeholder="Enter swimmer full name">
                 </div>
                 <div>
                     <label class="form-label small fw-semibold">Select Sessions</label>
