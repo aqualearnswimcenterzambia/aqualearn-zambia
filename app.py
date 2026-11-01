@@ -14,8 +14,6 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
 with app.app_context():
-    # Recreates tables to ensure all new columns match the updated models
-    db.drop_all()
     db.create_all()
 
 @app.context_processor
@@ -135,14 +133,18 @@ def mark_attendance():
         
     return redirect(url_for('dashboard'))
 
+# Public Registration (Clients and Coaches only)
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
         phone = request.form.get('phone', '').strip()
         password = request.form.get('password', '').strip()
-        role = request.form.get('role', 'client')
         package_name = request.form.get('package_name', 'Basic')
+        
+        role = request.form.get('role', 'client')
+        if role not in ['client', 'coach']:
+            role = 'client'
         
         try:
             total_sessions = int(request.form.get('total_sessions', 10))
@@ -185,6 +187,7 @@ def register():
 
     return render_template('register.html')
 
+# Public Login (Clients and Coaches)
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -193,8 +196,8 @@ def login():
         
         user = User.query.filter_by(phone=phone).first()
         
-        if not user:
-            flash(f'No user found with phone number "{phone}". Please register first.', 'danger')
+        if not user or user.role == 'manager':
+            flash('Invalid login credentials.', 'danger')
             return render_template('login.html')
             
         if not check_password_hash(user.password_hash, password):
@@ -206,6 +209,67 @@ def login():
         return redirect(url_for('dashboard'))
             
     return render_template('login.html')
+
+# ==================== HIDDEN / SECRET MANAGER PORTAL ====================
+# Only accessible if you type this exact secret web address into your browser!
+
+@app.route('/secure-admin-portal-777/login', methods=['GET', 'POST'])
+def manager_login():
+    if request.method == 'POST':
+        phone = request.form.get('phone', '').strip()
+        password = request.form.get('password', '').strip()
+        
+        user = User.query.filter_by(phone=phone, role='manager').first()
+        
+        if not user or not check_password_hash(user.password_hash, password):
+            flash('Invalid Manager credentials.', 'danger')
+            return render_template('manager_login.html')
+            
+        session['user_id'] = user.id
+        flash('Logged in as Manager successfully!', 'success')
+        return redirect(url_for('dashboard'))
+        
+    return render_template('manager_login.html')
+
+@app.route('/secure-admin-portal-777/register', methods=['GET', 'POST'])
+def manager_register():
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        phone = request.form.get('phone', '').strip()
+        password = request.form.get('password', '').strip()
+        secret_passcode = request.form.get('secret_passcode', '').strip()
+        
+        if secret_passcode != 'AQUA_MANAGER_2026':
+            flash('Invalid Manager Secret Passcode!', 'danger')
+            return render_template('manager_register.html')
+            
+        if not username or not phone or not password:
+            flash('Please fill in all required fields.', 'danger')
+            return render_template('manager_register.html')
+            
+        existing = User.query.filter_by(phone=phone).first()
+        if existing:
+            flash('Phone number already registered.', 'danger')
+            return render_template('manager_register.html')
+            
+        new_manager = User(
+            username=username,
+            phone=phone,
+            password_hash=generate_password_hash(password),
+            role='manager',
+            package_name='Admin',
+            total_sessions=0,
+            remaining_sessions=0
+        )
+        
+        db.session.add(new_manager)
+        db.session.commit()
+        flash('Manager account created successfully! You can now log in.', 'success')
+        return redirect(url_for('manager_login'))
+        
+    return render_template('manager_register.html')
+
+# =========================================================================
 
 @app.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():
