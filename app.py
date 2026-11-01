@@ -15,6 +15,8 @@ db.init_app(app)
 from models import User, Child, Attendance, CoachLog
 
 with app.app_context():
+    # Automatically drop and recreate tables to ensure all new columns and relationships match cleanly
+    db.drop_all()
     db.create_all()
 
 @app.context_processor
@@ -59,7 +61,7 @@ def dashboard():
     except Exception as e:
         return f"""
         <div style="padding: 40px; font-family: sans-serif; background: #fff3f3; color: #900;">
-            <h3>Template Rendering Error:</h3>
+            <h3>Error Rendering Dashboard:</h3>
             <pre>{str(e)}</pre>
             <a href="{url_for('logout')}">Log Out</a>
         </div>
