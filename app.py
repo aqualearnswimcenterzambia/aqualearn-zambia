@@ -14,7 +14,6 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
 with app.app_context():
-    db.drop_all()
     db.create_all()
 
 @app.context_processor
@@ -231,11 +230,8 @@ def manager_portal():
             username = request.form.get('username', '').strip()
             phone = request.form.get('phone', '').strip()
             password = request.form.get('password', '').strip()
-            secret_passcode = request.form.get('secret_passcode', '').strip()
             
-            if secret_passcode != 'AQUA_MANAGER_2026':
-                flash('Invalid Manager Secret Passcode!', 'danger')
-            elif not username or not phone or not password:
+            if not username or not phone or not password:
                 flash('Please fill in all required fields.', 'danger')
             else:
                 existing = User.query.filter_by(phone=phone).first()
