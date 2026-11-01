@@ -24,7 +24,6 @@ def inject_user():
 
 @app.route('/')
 def home():
-    # Provide a gallery variable so index.html doesn't crash
     gallery_items = []
     return render_template('index.html', gallery=gallery_items)
 
@@ -90,10 +89,13 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        phone = request.form.get('phone')
+        # Accept phone, username, or identifier input from the form
+        identifier = request.form.get('phone') or request.form.get('username') or request.form.get('identifier')
         password = request.form.get('password')
         
-        user = User.query.filter_by(phone=phone).first()
+        # Check against both phone and username columns in the database
+        user = User.query.filter((User.phone == identifier) | (User.username == identifier)).first()
+        
         if user and check_password_hash(user.password_hash, password):
             session['user_id'] = user.id
             flash('Logged in successfully!', 'success')
