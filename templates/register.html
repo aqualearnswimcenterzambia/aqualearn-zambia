@@ -89,10 +89,7 @@
             
             if (role === 'coach') {
                 childrenSection.style.display = 'none';
-                swimmerInputs.forEach(input => {
-                    input.removeAttribute('required');
-                    input.value = ''; // clear input when switching to coach
-                });
+                swimmerInputs.forEach(input => input.removeAttribute('required'));
             } else {
                 childrenSection.style.display = 'block';
                 swimmerInputs.forEach(input => input.setAttribute('required', 'required'));
@@ -128,6 +125,18 @@
             `;
             container.appendChild(box);
         }
+
+        document.getElementById('registrationForm').addEventListener('submit', function() {
+            const role = document.getElementById('role').value;
+            const username = document.getElementById('username').value;
+            const swimmerInputs = document.querySelectorAll('.swimmer-input');
+            
+            if (role === 'client' && swimmerInputs.length > 0) {
+                if (!swimmerInputs[0].value.trim()) {
+                    swimmerInputs[0].value = username;
+                }
+            }
+        });
     </script>
 </body>
 </html>

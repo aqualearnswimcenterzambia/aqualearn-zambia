@@ -15,7 +15,7 @@ db.init_app(app)
 from models import User, Child, Attendance, CoachLog
 
 with app.app_context():
-    # Automatically recreate tables on startup to apply new cascade and relationship rules
+    # Automatically recreate tables on startup to apply schema structure cleanly
     db.drop_all()
     db.create_all()
 
@@ -140,21 +140,18 @@ def delete_user(user_id):
         return redirect(url_for('dashboard'))
         
     try:
-        # If deleting a client, clean up their registered children and attendance records first
         if target_user.role == 'client':
             children = Child.query.filter_by(parent_id=target_user.id).all()
             for child in children:
                 Attendance.query.filter_by(child_id=child.id).delete()
                 db.session.delete(child)
             Attendance.query.filter_by(user_id=target_user.id).delete()
-            
-        # If deleting a coach, clean up their coach logs
         elif target_user.role == 'coach':
             CoachLog.query.filter_by(coach_id=target_user.id).delete()
 
         db.session.delete(target_user)
         db.session.commit()
-        flash(f'Successfully deleted {target_user.username} and all associated records.', 'success')
+        flash(f'Successfully deleted {target_user.username} and associated records.', 'success')
     except Exception as e:
         db.session.rollback()
         flash(f'Error deleting user: {str(e)}', 'danger')
@@ -207,31 +204,26 @@ def register():
 
         hashed_password = generate_password_hash(password)
         
-        existing_user = User.query.filter_by(phone=phone).first()
-        if existing_user:
-            existing_user.password_hash = hashed_password
-            existing_user.username = username
-            existing_user.role = role
+        # Check if user already exists by phone number
+        user = User.query.filter_by(phone=phone).first()
+        
+        if not user:
+            user = User(
+                username=username,
+                phone=phone,
+                password_hash=hashed_password,
+                role=role,
+                package_name='Family Package' if role == 'client' else 'Coach'
+            )
+            db.session.add(user)
             db.session.commit()
-            flash('Account updated successfully! You can now log in.', 'success')
-            return redirect(url_for('login'))
-
-        new_user = User(
-            username=username,
-            phone=phone,
-            password_hash=hashed_password,
-            role=role,
-            package_name='Family Package' if role == 'client' else 'Coach'
-        )
 
         try:
-            db.session.add(new_user)
-            db.session.commit()
-
             if role == 'client':
                 child_names = request.form.getlist('child_names[]')
                 child_sessions = request.form.getlist('child_sessions[]')
                 
+                added_any = False
                 for name, sessions in zip(child_names, child_sessions):
                     if name.strip():
                         try:
@@ -240,13 +232,25 @@ def register():
                             sess_count = 10
                             
                         new_child = Child(
-                            parent_id=new_user.id,
+                            parent_id=user.id,
                             name=name.strip(),
                             total_sessions=sess_count,
                             remaining_sessions=sess_count,
                             package_name=f"{sess_count} Sessions Package"
                         )
                         db.session.add(new_child)
+                        added_any = True
+                
+                if not added_any:
+                    new_child = Child(
+                        parent_id=user.id,
+                        name=username,
+                        total_sessions=10,
+                        remaining_sessions=10,
+                        package_name="10 Sessions Package"
+                    )
+                    db.session.add(new_child)
+
                 db.session.commit()
 
             flash('Registration successful! You can now log in.', 'success')
