@@ -1,73 +1,162 @@
-{% extends 'base.html' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coach Dashboard - Aqua Learn Swim Center</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            overflow-x: hidden;
+        }
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 260px;
+            background: #198754;
+            color: white;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar .brand {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-bottom: 2rem;
+        }
+        .sidebar .brand span {
+            font-size: 0.8rem;
+            display: block;
+            opacity: 0.8;
+        }
+        .sidebar nav a {
+            color: rgba(255,255,255,0.85);
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin-bottom: 5px;
+            display: block;
+            font-weight: 500;
+        }
+        .sidebar nav a:hover, .sidebar nav a.active {
+            background: rgba(255,255,255,0.15);
+            color: white;
+        }
+        .main-content {
+            margin-left: 260px;
+            padding: 30px;
+        }
+        .coach-banner {
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url("{{ url_for('static', filename='images/about-pool.jpg.jpeg') }}") center/cover no-repeat;
+            border-radius: 15px;
+            color: white;
+            padding: 40px;
+        }
+    </style>
+</head>
+<body>
 
-{% block content %}
-<div class="container py-4">
-    <div class="card p-4 mb-4 border-0 text-white rounded-4 shadow" style="background: linear-gradient(135deg, #084c61, #17a2b8);">
-        <h2 class="brand-font fw-bold mb-1">Coach Portal: {{ current_user.username }}</h2>
-        <p class="mb-0 opacity-90">Log your clients coached today and calculate expected earnings.</p>
+    <!-- Sidebar Navigation -->
+    <div class="sidebar shadow-sm">
+        <div class="brand">
+            AQUALEARN
+            <span>Coach Portal</span>
+        </div>
+        <nav class="nav flex-column mb-auto">
+            <a href="{{ url_for('home') }}">🏠 Home</a>
+            <a href="{{ url_for('dashboard') }}" class="active">📊 Coach Dashboard</a>
+            <a href="{{ url_for('logout') }}" class="text-warning">🚪 Logout</a>
+        </nav>
     </div>
 
-    <div class="row g-4">
-        <!-- Add Client Log Form -->
-        <div class="col-lg-5">
-            <div class="card p-4 border-0 rounded-4 shadow-sm bg-white">
-                <h5 class="brand-font fw-bold mb-3" style="color: var(--dark-teal);">Log Client Coached</h5>
-                <form method="POST" action="{{ url_for('coach_add_entry') }}">
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold">Select Client</label>
-                        <select name="client_name" class="form-select" required>
-                            {% for c in clients %}
-                            <option value="{{ c.username }}">{{ c.username }} (Phone: {{ c.phone }})</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold">Time Coached</label>
-                        <input type="text" name="session_time" class="form-control" placeholder="e.g. 10:00 AM - 10:45 AM" required>
-                    </div>
-                    <div class="mb-4">
-                        <label class="form-label small fw-bold">Expected Pay (Kwacha)</label>
-                        <input type="number" step="0.01" name="amount_expected" class="form-control" placeholder="e.g. 20" required>
-                    </div>
-                    <button type="submit" class="btn btn-info text-white w-100 py-3 fw-bold rounded-pill shadow-sm">+ Add Entry</button>
-                </form>
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <div class="container-fluid">
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'danger' else 'success' }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <!-- Local Photo Banner Header -->
+            <div class="coach-banner shadow mb-4">
+                <h2>Welcome, Coach {{ user.username }}</h2>
+                <p class="mb-0">Manage training sessions, log daily activities, and track expected coaching metrics.</p>
             </div>
-        </div>
 
-        <!-- Today's Coaching Logs & Live Total -->
-        <div class="col-lg-7">
-            <div class="card p-4 border-0 rounded-4 shadow-sm bg-white">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="brand-font fw-bold mb-0" style="color: var(--dark-teal);">Today's Entries</h5>
-                    <span class="badge bg-success fs-6 rounded-pill px-3 py-2">Total Expected: K{{ "%.2f"|format(day_total) }}</span>
+            <!-- Log Training Session Form -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-success text-white fw-bold">Log Training Session</div>
+                <div class="card-body">
+                    <form action="{{ url_for('coach_add_entry') }}" method="POST" class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Client Name</label>
+                            <select name="client_name" class="form-select" required>
+                                <option value="" disabled selected>Select client...</option>
+                                {% for client in clients %}
+                                    <option value="{{ client.username }}">{{ client.username }} ({{ client.phone }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Session Time</label>
+                            <input type="text" name="session_time" class="form-control" placeholder="e.g. 10:00 AM - 11:00 AM" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Amount Expected (ZMW)</label>
+                            <input type="number" step="0.01" name="amount_expected" class="form-control" value="0.00" required>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-success fw-bold px-4">Save Coaching Entry</button>
+                        </div>
+                    </form>
                 </div>
+            </div>
 
-                {% if logs %}
-                <div class="table-responsive">
-                    <table class="table align-middle">
+            <!-- Coaching Logs Table -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items: center;">
+                    <span class="fw-bold">Recorded Coaching Logs</span>
+                    <span class="badge bg-success fs-6">Total Expected: ZMW {{ "%.2f"|format(day_total) }}</span>
+                </div>
+                <div class="card-body table-responsive">
+                    <table class="table table-striped align-middle mb-0">
                         <thead>
                             <tr>
+                                <th>Date Logged</th>
                                 <th>Client</th>
                                 <th>Time</th>
-                                <th>Amount Expected</th>
+                                <th>Expected Amount</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for log in logs %}
                             <tr>
-                                <td class="fw-bold text-dark">{{ log.client_name }}</td>
+                                <td>{{ log.date_logged }}</td>
+                                <td>{{ log.client_name }}</td>
                                 <td>{{ log.session_time }}</td>
-                                <td class="text-success fw-bold">K{{ "%.2f"|format(log.amount_expected) }}</td>
+                                <td>ZMW {{ "%.2f"|format(log.amount_expected) }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-4">No training entries logged yet.</td>
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
-                {% else %}
-                <p class="text-muted small py-4 text-center mb-0">No client entries added yet for today.</p>
-                {% endif %}
             </div>
         </div>
     </div>
-</div>
-{% endblock %}
+
+</body>
+</html>

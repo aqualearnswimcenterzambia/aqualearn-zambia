@@ -6,63 +6,139 @@
     <title>Aqua Learn Swim Center Zambia</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        .hero-banner {
-            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url("{{ url_for('static', filename='images/hero-bg.jpg.jpeg') }}") center/cover no-repeat;
-            min-height: 450px;
+        body {
+            background-color: #f8f9fa;
+            overflow-x: hidden;
+        }
+        /* Sidebar styling */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 260px;
+            background: #0d6efd;
+            color: white;
+            padding: 20px;
             display: flex;
-            align-items: center;
+            flex-direction: column;
+        }
+        .sidebar .brand {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-bottom: 2rem;
+        }
+        .sidebar .brand span {
+            font-size: 0.8rem;
+            display: block;
+            opacity: 0.8;
+        }
+        .sidebar nav a {
+            color: rgba(255,255,255,0.85);
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin-bottom: 5px;
+            display: block;
+            font-weight: 500;
+        }
+        .sidebar nav a:hover, .sidebar nav a.active {
+            background: rgba(255,255,255,0.15);
+            color: white;
+        }
+        .main-content {
+            margin-left: 260px;
+            padding: 30px;
+        }
+        .hero-card {
+            background: linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url("{{ url_for('static', filename='images/hero-bg.jpg.jpeg') }}") center/cover no-repeat;
+            border-radius: 15px;
+            color: white;
+            padding: 80px 40px;
+            position: relative;
+            overflow: hidden;
         }
     </style>
 </head>
-<body class="bg-light">
-    <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="{{ url_for('home') }}">🏊‍♂️ Aqua Learn Swim Center</a>
-            <div class="ms-auto">
-                {% if current_user %}
-                    <a href="{{ url_for('dashboard') }}" class="btn btn-light text-primary fw-bold me-2">Dashboard</a>
-                    <a href="{{ url_for('logout') }}" class="btn btn-outline-light">Logout</a>
-                {% else %}
-                    <a href="{{ url_for('login') }}" class="btn btn-light text-primary fw-bold me-2">Login</a>
-                    <a href="{{ url_for('register') }}" class="btn btn-warning text-dark fw-bold">Register</a>
-                {% endif %}
+<body>
+
+    <!-- Sidebar Navigation -->
+    <div class="sidebar shadow-sm">
+        <div class="brand">
+            AQUALEARN
+            <span>Swim Center Zambia</span>
+        </div>
+        <nav class="nav flex-column mb-auto">
+            <a href="{{ url_for('home') }}" class="active">🏠 Home</a>
+            <a href="#programs">🏊‍♂️ Our Programs</a>
+            <a href="#contact">📞 Contact Us</a>
+            {% if current_user %}
+                <a href="{{ url_for('dashboard') }}">📊 Dashboard</a>
+                <a href="{{ url_for('logout') }}" class="text-warning">🚪 Logout</a>
+            {% else %}
+                <a href="{{ url_for('login') }}">🔑 Login</a>
+                <a href="{{ url_for('register') }}">✨ Register</a>
+            {% endif %}
+        </nav>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <div class="container-fluid">
+            <!-- Hero Card Section -->
+            <div class="hero-card shadow-lg mb-5 text-center">
+                <div class="mb-3">
+                    <span class="badge bg-info text-dark px-3 py-2 fw-semibold">Millennium Village, Lusaka</span>
+                </div>
+                <h1 class="display-5 fw-bold mb-3">Aqualearn Swim Center</h1>
+                <p class="lead mb-4 mx-auto" style="max-width: 600px;">Life is better when you are swimming! Take the plunge for fitness and fun with professional coaching.</p>
+                <a href="{{ url_for('register') }}" class="btn btn-info btn-lg text-dark fw-bold px-4 py-2 rounded-pill shadow">Book a Class Now</a>
             </div>
-        </div>
-    </nav>
 
-    <!-- Hero Banner with Local Background Photo -->
-    <header class="py-5 text-white text-center position-relative hero-banner">
-        <div class="container">
-            <h1 class="display-4 fw-bold mb-3">Master the Water with Confidence</h1>
-            <p class="lead mb-4">Professional swimming lessons, expert coaching, and structured skill tracking in Lusaka, Zambia.</p>
-            <a href="{{ url_for('register') }}" class="btn btn-warning btn-lg text-dark fw-bold px-4 py-2">Get Started Today</a>
-        </div>
-    </header>
-
-    <!-- Local Photo Gallery Section -->
-    <section class="container my-5">
-        <h2 class="text-center fw-bold mb-4 text-primary">Our Training & Poolside Moments</h2>
-        <div class="row g-4">
-            {% if gallery %}
-                {% for img_file in gallery %}
-                    <div class="col-md-3 col-sm-6">
-                        <div class="card shadow-sm border-0 h-100">
-                            <img src="{{ url_for('static', filename=img_file) }}" class="card-img-top rounded" alt="Swim Center Photo" style="height: 220px; object-fit: cover;">
+            <!-- Why Choose Aqualearn Section -->
+            <div class="mb-5 text-center">
+                <h3 class="fw-bold text-primary mb-4">Why Choose Aqualearn?</h3>
+                <div class="row g-4 text-start">
+                    <div class="col-md-4">
+                        <div class="card border-0 shadow-sm h-100 p-3">
+                            <h5 class="fw-bold text-primary">Expert Coaching</h5>
+                            <p class="text-muted mb-0">Professional guidance tailored for all skill levels, from beginners to advanced swimmers.</p>
                         </div>
                     </div>
-                {% endfor %}
-            {% else %}
-                <p class="text-center text-muted">Gallery photos coming soon!</p>
-            {% endif %}
-        </div>
-    </section>
+                    <div class="col-md-4">
+                        <div class="card border-0 shadow-sm h-100 p-3">
+                            <h5 class="fw-bold text-primary">Structured Tracking</h5>
+                            <p class="text-muted mb-0">Easily monitor your session balances, attendance history, and daily coaching logs.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-0 shadow-sm h-100 p-3">
+                            <h5 class="fw-bold text-primary">Prime Location</h5>
+                            <p class="text-muted mb-0">Conveniently situated at Millennium Village in Lusaka for hassle-free training sessions[cite: 6].</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-    <!-- Footer -->
-    <footer class="bg-dark text-light text-center py-4 mt-5">
-        <div class="container">
-            <p class="mb-0">&copy; 2026 Aqua Learn Swim Center Zambia. All rights reserved.</p>
+            <!-- Local Photo Gallery Section -->
+            <div class="mb-5">
+                <h3 class="fw-bold text-primary mb-4 text-center">Our Training & Poolside Moments</h3>
+                <div class="row g-4">
+                    {% if gallery %}
+                        {% for img_file in gallery %}
+                            <div class="col-md-3 col-sm-6">
+                                <div class="card shadow-sm border-0 h-100">
+                                    <img src="{{ url_for('static', filename=img_file) }}" class="card-img-top rounded" alt="Swim Center Photo" style="height: 200px; object-fit: cover;">
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-center text-muted">Gallery photos coming soon!</p>
+                    {% endif %}
+                </div>
+            </div>
         </div>
-    </footer>
+    </div>
+
 </body>
 </html>
