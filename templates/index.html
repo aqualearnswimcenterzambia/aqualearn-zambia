@@ -11,7 +11,7 @@
             overflow-x: hidden;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        /* Sidebar Navigation - Dark Blue */
+        /* Sidebar Navigation - Desktop Default */
         .sidebar {
             position: fixed;
             top: 0;
@@ -86,7 +86,7 @@
             color: #ffffff;
         }
 
-        /* Main Content Layout */
+        /* Main Content Layout - Desktop Default */
         .main-content {
             margin-left: 260px;
             padding: 30px 40px;
@@ -154,6 +154,28 @@
         .btn-whatsapp:hover {
             background-color: #1eb956;
             color: white;
+        }
+
+        /* MOBILE RESPONSIVE FIX (Portrait Mode for Phones) */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: relative;
+                width: 100%;
+                height: auto;
+                padding: 20px;
+            }
+            .main-content {
+                margin-left: 0;
+                padding: 20px 15px;
+            }
+            .hero-card {
+                padding: 40px 20px;
+            }
+            .contact-card {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
         }
     </style>
 </head>
