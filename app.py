@@ -121,9 +121,7 @@ def forgot_password():
             return render_template('forgot_password.html')
             
         code = str(random.randint(100000, 999999))
-        user.reset_code = code
-        db.session.commit()
-        
+        session['reset_code'] = code
         session['reset_phone'] = phone
         
         flash(f'Verification code sent to {phone}. [SIMULATED SMS CODE: {code}]', 'info')
@@ -142,17 +140,18 @@ def reset_password():
         entered_code = request.form.get('code', '').strip()
         new_password = request.form.get('new_password', '').strip()
         
-        user = User.query.filter_by(phone=phone).first()
-        
-        if not user or user.reset_code != entered_code:
+        stored_code = session.get('reset_code')
+        if not stored_code or stored_code != entered_code:
             flash('Invalid verification code. Please try again.', 'danger')
             return render_template('reset_password.html')
             
-        user.password_hash = generate_password_hash(new_password)
-        user.reset_code = None
-        db.session.commit()
+        user = User.query.filter_by(phone=phone).first()
+        if user:
+            user.password_hash = generate_password_hash(new_password)
+            db.session.commit()
         
         session.pop('reset_phone', None)
+        session.pop('reset_code', None)
         flash('Password successfully reset! You can now log in with your new password.', 'success')
         return redirect(url_for('login'))
         
