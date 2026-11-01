@@ -15,7 +15,7 @@ db.init_app(app)
 from models import User, Child, Attendance, CoachLog
 
 with app.app_context():
-    # Automatically recreate database tables on startup to fix schema mismatches
+    # Automatically recreate tables on startup to apply new cascade and relationship rules
     db.drop_all()
     db.create_all()
 
@@ -139,9 +139,26 @@ def delete_user(user_id):
         flash('Cannot delete manager accounts.', 'warning')
         return redirect(url_for('dashboard'))
         
-    db.session.delete(target_user)
-    db.session.commit()
-    flash(f'Successfully deleted {target_user.username}.', 'success')
+    try:
+        # If deleting a client, clean up their registered children and attendance records first
+        if target_user.role == 'client':
+            children = Child.query.filter_by(parent_id=target_user.id).all()
+            for child in children:
+                Attendance.query.filter_by(child_id=child.id).delete()
+                db.session.delete(child)
+            Attendance.query.filter_by(user_id=target_user.id).delete()
+            
+        # If deleting a coach, clean up their coach logs
+        elif target_user.role == 'coach':
+            CoachLog.query.filter_by(coach_id=target_user.id).delete()
+
+        db.session.delete(target_user)
+        db.session.commit()
+        flash(f'Successfully deleted {target_user.username} and all associated records.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error deleting user: {str(e)}', 'danger')
+
     return redirect(url_for('dashboard'))
 
 @app.route('/mark-attendance/<int:child_id>', methods=['POST'])
