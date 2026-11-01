@@ -12,11 +12,9 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
 
-# Ensure database tables are created within application context
 with app.app_context():
     db.create_all()
 
-# Context processor so 'current_user' is always available in templates
 @app.context_processor
 def inject_user():
     user = User.query.get(session.get('user_id')) if 'user_id' in session else None
@@ -44,9 +42,9 @@ def dashboard():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        username = request.form.get('username')
-        phone = request.form.get('phone')
-        password = request.form.get('password')
+        username = request.form.get('username', '').strip()
+        phone = request.form.get('phone', '').strip()
+        password = request.form.get('password', '').strip()
         role = request.form.get('role', 'client')
         package_name = request.form.get('package_name', 'Basic')
         
@@ -89,19 +87,22 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        phone = request.form.get('phone')
-        password = request.form.get('password')
+        phone = request.form.get('phone', '').strip()
+        password = request.form.get('password', '').strip()
         
-        # Query strictly by phone number column
         user = User.query.filter_by(phone=phone).first()
         
-        if user and check_password_hash(user.password_hash, password):
-            session['user_id'] = user.id
-            flash('Logged in successfully!', 'success')
-            return redirect(url_for('dashboard'))
-        else:
-            flash('Invalid phone number or password.', 'danger')
+        if not user:
+            flash(f'Debug: No user found with phone number "{phone}".', 'danger')
             return render_template('login.html')
+            
+        if not check_password_hash(user.password_hash, password):
+            flash('Debug: User found, but password hash did not match!', 'danger')
+            return render_template('login.html')
+            
+        session['user_id'] = user.id
+        flash('Logged in successfully!', 'success')
+        return redirect(url_for('dashboard'))
             
     return render_template('login.html')
 
