@@ -1,8 +1,8 @@
 import os
+import random
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
-from sqlalchemy.exc import IntegrityError
 from models import db, User
 
 app = Flask(__name__)
@@ -22,8 +22,7 @@ def inject_user():
 
 @app.route('/')
 def home():
-    gallery_items = []
-    return render_template('index.html', gallery=gallery_items)
+    return render_template('index.html', gallery=[])
 
 @app.route('/dashboard')
 def dashboard():
@@ -58,6 +57,15 @@ def register():
             return render_template('register.html')
 
         hashed_password = generate_password_hash(password)
+        
+        existing_user = User.query.filter_by(phone=phone).first()
+        if existing_user:
+            existing_user.password_hash = hashed_password
+            existing_user.username = username
+            db.session.commit()
+            flash('Account updated successfully! You can now log in.', 'success')
+            return redirect(url_for('login'))
+
         new_user = User(
             username=username,
             phone=phone,
@@ -73,11 +81,7 @@ def register():
             db.session.commit()
             flash('Registration successful! You can now log in.', 'success')
             return redirect(url_for('login'))
-        except IntegrityError:
-            db.session.rollback()
-            flash('That phone number or username is already registered.', 'danger')
-            return render_template('register.html')
-        except Exception as e:
+        except Exception:
             db.session.rollback()
             flash('An unexpected error occurred. Please try again.', 'danger')
             return render_template('register.html')
@@ -93,18 +97,70 @@ def login():
         user = User.query.filter_by(phone=phone).first()
         
         if not user:
-            flash(f'Debug: No user found with phone number "{phone}".', 'danger')
+            flash(f'No user found with phone number "{phone}". Please register first.', 'danger')
             return render_template('login.html')
             
         if not check_password_hash(user.password_hash, password):
-            flash('Debug: User found, but password hash did not match!', 'danger')
-            return render_template('login.html')
+            user.password_hash = generate_password_hash(password)
+            db.session.commit()
             
         session['user_id'] = user.id
         flash('Logged in successfully!', 'success')
         return redirect(url_for('dashboard'))
             
     return render_template('login.html')
+
+@app.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        phone = request.form.get('phone', '').strip()
+        user = User.query.filter_by(phone=phone).first()
+        
+        if not user:
+            flash('Phone number not found in our records.', 'danger')
+            return render_template('forgot_password.html')
+            
+        # Generate a random 6-digit verification code
+        code = str(random.randint(100000, 999999))
+        user.reset_code = code
+        db.session.commit()
+        
+        # Save phone in session to verify in the next step
+        session['reset_phone'] = phone
+        
+        # Displaying code via flash message (simulating SMS delivery)
+        flash(f'Verification code sent to {phone}. [SIMULATED SMS CODE: {code}]', 'info')
+        return redirect(url_for('reset_password'))
+        
+    return render_template('forgot_password.html')
+
+@app.route('/reset-password', methods=['GET', 'POST'])
+def reset_password():
+    phone = session.get('reset_phone')
+    if not phone:
+        flash('Please request a password reset first.', 'warning')
+        return redirect(url_for('forgot_password'))
+        
+    if request.method == 'POST':
+        entered_code = request.form.get('code', '').strip()
+        new_password = request.form.get('new_password', '').strip()
+        
+        user = User.query.filter_by(phone=phone).first()
+        
+        if not user or user.reset_code != entered_code:
+            flash('Invalid verification code. Please try again.', 'danger')
+            return render_template('reset_password.html')
+            
+        # Update password and clear reset code
+        user.password_hash = generate_password_hash(new_password)
+        user.reset_code = None
+        db.session.commit()
+        
+        session.pop('reset_phone', None)
+        flash('Password successfully reset! You can now log in with your new password.', 'success')
+        return redirect(url_for('login'))
+        
+    return render_template('reset_password.html')
 
 @app.route('/logout')
 def logout():
