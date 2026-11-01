@@ -24,10 +24,13 @@ def inject_user():
 @app.route('/')
 def home():
     gallery = [
-        "https://images.unsplash.com/photo-1530549387789-4c1017266635?auto=format&fit=crop&w=800&q=80",
-        "https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?auto=format&fit=crop&w=800&q=80",
-        "https://images.unsplash.com/photo-1600965962361-9035dbfd1c87?auto=format&fit=crop&w=800&q=80",
-        "https://images.unsplash.com/photo-1519315351827-04664fbddb3a?auto=format&fit=crop&w=800&q=80"
+        "images/poolside-prep.jpg.jpeg",
+        "images/splash-fun.jpg.jpeg",
+        "images/starting-block.jpg.jpeg",
+        "images/water-smile.jpg.jpeg",
+        "images/about-pool.jpg.jpeg",
+        "images/kickboard.jpg.jpeg",
+        "images/swim-kickboard.jpg.jpeg"
     ]
     return render_template('index.html', gallery=gallery)
 
