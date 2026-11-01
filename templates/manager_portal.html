@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Manager Portal - Aqua Learn</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-dark text-light py-5">
+    <div class="container" style="max-width: 900px;">
+        <div class="text-center mb-4">
+            <h1 class="text-danger fw-bold">🔒 Restricted Manager Portal</h1>
+            <p class="text-muted">Secret administrative access point</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'danger' else 'success' }} py-2" role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="row g-4">
+            <!-- Login Form -->
+            <div class="col-md-6">
+                <div class="card bg-secondary text-light p-4 shadow h-100">
+                    <h3 class="mb-3 text-center">Manager Login</h3>
+                    <form method="POST">
+                        <input type="hidden" name="form_type" value="login">
+                        <div class="mb-3">
+                            <label class="form-label">Phone Number</label>
+                            <input type="text" name="phone" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Password</label>
+                            <input type="password" name="password" class="form-control" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Log In</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Registration Form (Set Custom Password) -->
+            <div class="col-md-6">
+                <div class="card bg-secondary text-light p-4 shadow h-100">
+                    <h3 class="mb-3 text-center">Register Manager</h3>
+                    <form method="POST">
+                        <input type="hidden" name="form_type" value="register">
+                        <div class="mb-3">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" name="username" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Phone Number</label>
+                            <input type="text" name="phone" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Custom Password</label>
+                            <input type="password" name="password" class="form-control" placeholder="Choose your password" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Secret Passcode</label>
+                            <input type="password" name="secret_passcode" class="form-control" placeholder="AQUA_MANAGER_2026" required>
+                        </div>
+                        <button type="submit" class="btn btn-danger w-100">Create / Update Account</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
