@@ -12,22 +12,9 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
 
-# Ensure database tables and a default test user are created within application context
+# Ensure database tables are created within application context
 with app.app_context():
     db.create_all()
-    # Create a default test account if none exists so you can test logging in instantly
-    if not User.query.filter_by(username='admin').first():
-        test_user = User(
-            username='admin',
-            phone='0970000000',
-            password_hash=generate_password_hash('password123'),
-            role='manager',
-            total_sessions=10,
-            remaining_sessions=10,
-            package_name='Premium'
-        )
-        db.session.add(test_user)
-        db.session.commit()
 
 # Context processor so 'current_user' is always available in templates
 @app.context_processor
@@ -102,18 +89,18 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        identifier = request.form.get('phone') or request.form.get('username') or request.form.get('identifier')
+        phone = request.form.get('phone')
         password = request.form.get('password')
         
-        # Check against BOTH username and phone columns in the database
-        user = User.query.filter((User.username == identifier) | (User.phone == identifier)).first()
+        # Query strictly by phone number column
+        user = User.query.filter_by(phone=phone).first()
         
         if user and check_password_hash(user.password_hash, password):
             session['user_id'] = user.id
             flash('Logged in successfully!', 'success')
             return redirect(url_for('dashboard'))
         else:
-            flash('Invalid username or password.', 'danger')
+            flash('Invalid phone number or password.', 'danger')
             return render_template('login.html')
             
     return render_template('login.html')
