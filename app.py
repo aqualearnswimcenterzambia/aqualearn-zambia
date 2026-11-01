@@ -12,13 +12,9 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
 
-# Import models after db initialization to prevent circular imports
-from models import User, Attendance, CoachLog
+from models import User, Child, Attendance, CoachLog
 
 with app.app_context():
-    # Uncomment db.drop_all() ONCE to wipe the old broken tables, 
-    # then comment it back out after your first successful deployment if you want to preserve data.
-    db.drop_all() 
     db.create_all()
 
 @app.context_processor
@@ -63,9 +59,8 @@ def dashboard():
     except Exception as e:
         return f"""
         <div style="padding: 40px; font-family: sans-serif; background: #fff3f3; color: #900;">
-            <h3>Template Rendering Error Caught:</h3>
+            <h3>Template Rendering Error:</h3>
             <pre>{str(e)}</pre>
-            <p>Role was: <strong>{user.role}</strong></p>
             <a href="{url_for('logout')}">Log Out</a>
         </div>
         """
@@ -102,29 +97,28 @@ def coach_add_entry():
     db.session.add(new_log)
     db.session.commit()
     flash('Coaching entry added successfully!', 'success')
-    
     return redirect(url_for('dashboard'))
 
-@app.route('/adjust-sessions/<int:user_id>', methods=['POST'])
-def adjust_sessions(user_id):
+@app.route('/adjust-child-sessions/<int:child_id>', methods=['POST'])
+def adjust_child_sessions(child_id):
     user = User.query.get(session.get('user_id')) if 'user_id' in session else None
     if not user or user.role != 'manager':
         flash('Unauthorized access.', 'danger')
         return redirect(url_for('login'))
     
-    client_user = User.query.get_or_404(user_id)
+    child = Child.query.get_or_404(child_id)
     action = request.form.get('action')
     
     if action == 'add':
-        client_user.remaining_sessions += 1
-        client_user.total_sessions += 1
-        flash(f'Added 1 session for {client_user.username}.', 'success')
+        child.remaining_sessions += 1
+        child.total_sessions += 1
+        flash(f'Added 1 session for {child.name}.', 'success')
     elif action == 'subtract':
-        if client_user.remaining_sessions > 0:
-            client_user.remaining_sessions -= 1
-            flash(f'Subtracted 1 session for {client_user.username}.', 'success')
+        if child.remaining_sessions > 0:
+            child.remaining_sessions -= 1
+            flash(f'Subtracted 1 session for {child.name}.', 'success')
         else:
-            flash(f'{client_user.username} has 0 remaining sessions.', 'warning')
+            flash(f'{child.name} has 0 remaining sessions.', 'warning')
             
     db.session.commit()
     return redirect(url_for('dashboard'))
@@ -138,30 +132,40 @@ def delete_user(user_id):
     
     target_user = User.query.get_or_404(user_id)
     if target_user.role == 'manager':
-        flash('Cannot delete manager accounts through this action.', 'warning')
+        flash('Cannot delete manager accounts.', 'warning')
         return redirect(url_for('dashboard'))
         
     db.session.delete(target_user)
     db.session.commit()
-    flash(f'Successfully deleted {target_user.username} ({target_user.role}).', 'success')
+    flash(f'Successfully deleted {target_user.username}.', 'success')
     return redirect(url_for('dashboard'))
 
-@app.route('/mark-attendance', methods=['POST'])
-def mark_attendance():
+@app.route('/mark-attendance/<int:child_id>', methods=['POST'])
+def mark_attendance(child_id):
     user = User.query.get(session.get('user_id')) if 'user_id' in session else None
     if not user or user.role != 'client':
         flash('Unauthorized access.', 'danger')
         return redirect(url_for('login'))
     
-    if user.remaining_sessions > 0:
-        user.remaining_sessions -= 1
+    child = Child.query.get_or_404(child_id)
+    if child.parent_id != user.id:
+        flash('Unauthorized action.', 'danger')
+        return redirect(url_for('dashboard'))
+
+    if child.remaining_sessions > 0:
+        child.remaining_sessions -= 1
         today_str = datetime.now().strftime('%B %d, %Y - %H:%M')
-        new_attendance = Attendance(user_id=user.id, date_marked=today_str)
+        new_attendance = Attendance(
+            user_id=user.id,
+            child_id=child.id,
+            child_name=child.name,
+            date_marked=today_str
+        )
         db.session.add(new_attendance)
         db.session.commit()
-        flash('Attendance marked successfully! 1 session deducted.', 'success')
+        flash(f'Attendance marked for {child.name}! 1 session deducted.', 'success')
     else:
-        flash('You have no remaining sessions left.', 'warning')
+        flash(f'{child.name} has no remaining sessions left.', 'warning')
         
     return redirect(url_for('dashboard'))
 
@@ -171,16 +175,10 @@ def register():
         username = request.form.get('username', '').strip()
         phone = request.form.get('phone', '').strip()
         password = request.form.get('password', '').strip()
-        package_name = request.form.get('package_name', 'Basic')
-        
         role = request.form.get('role', 'client')
+        
         if role not in ['client', 'coach']:
             role = 'client'
-        
-        try:
-            total_sessions = int(request.form.get('total_sessions', 10))
-        except (ValueError, TypeError):
-            total_sessions = 10
 
         if not username or not phone or not password:
             flash('Please fill in all required fields.', 'danger')
@@ -192,6 +190,7 @@ def register():
         if existing_user:
             existing_user.password_hash = hashed_password
             existing_user.username = username
+            existing_user.role = role
             db.session.commit()
             flash('Account updated successfully! You can now log in.', 'success')
             return redirect(url_for('login'))
@@ -201,19 +200,39 @@ def register():
             phone=phone,
             password_hash=hashed_password,
             role=role,
-            total_sessions=total_sessions,
-            remaining_sessions=total_sessions,
-            package_name=package_name
+            package_name='Family Package' if role == 'client' else 'Coach'
         )
 
         try:
             db.session.add(new_user)
             db.session.commit()
+
+            if role == 'client':
+                child_names = request.form.getlist('child_names[]')
+                child_sessions = request.form.getlist('child_sessions[]')
+                
+                for name, sessions in zip(child_names, child_sessions):
+                    if name.strip():
+                        try:
+                            sess_count = int(sessions)
+                        except (ValueError, TypeError):
+                            sess_count = 10
+                            
+                        new_child = Child(
+                            parent_id=new_user.id,
+                            name=name.strip(),
+                            total_sessions=sess_count,
+                            remaining_sessions=sess_count,
+                            package_name=f"{sess_count} Sessions Package"
+                        )
+                        db.session.add(new_child)
+                db.session.commit()
+
             flash('Registration successful! You can now log in.', 'success')
             return redirect(url_for('login'))
-        except Exception:
+        except Exception as err:
             db.session.rollback()
-            flash('An unexpected error occurred. Please try again.', 'danger')
+            flash(f'Registration error: {str(err)}', 'danger')
             return render_template('register.html')
 
     return render_template('register.html')
@@ -271,20 +290,18 @@ def manager_portal():
                     existing.username = username
                     existing.role = 'manager'
                     db.session.commit()
-                    flash('Manager account updated with your custom password! You can now log in.', 'success')
+                    flash('Manager account updated! You can now log in.', 'success')
                 else:
                     new_manager = User(
                         username=username,
                         phone=phone,
                         password_hash=generate_password_hash(password),
                         role='manager',
-                        package_name='Admin',
-                        total_sessions=0,
-                        remaining_sessions=0
+                        package_name='Admin'
                     )
                     db.session.add(new_manager)
                     db.session.commit()
-                    flash('Manager account created successfully with your custom password! You can now log in.', 'success')
+                    flash('Manager account created! You can now log in.', 'success')
                     
     return render_template('manager_portal.html')
 
@@ -295,7 +312,7 @@ def forgot_password():
         user = User.query.filter_by(phone=phone).first()
         
         if not user:
-            flash('Phone number not found in our records.', 'danger')
+            flash('Phone number not found.', 'danger')
             return render_template('forgot_password.html')
             
         code = str(random.randint(100000, 999999))
@@ -320,7 +337,7 @@ def reset_password():
         
         stored_code = session.get('reset_code')
         if not stored_code or stored_code != entered_code:
-            flash('Invalid verification code. Please try again.', 'danger')
+            flash('Invalid verification code.', 'danger')
             return render_template('reset_password.html')
             
         user = User.query.filter_by(phone=phone).first()
@@ -330,7 +347,7 @@ def reset_password():
         
         session.pop('reset_phone', None)
         session.pop('reset_code', None)
-        flash('Password successfully reset! You can now log in with your new password.', 'success')
+        flash('Password successfully reset!', 'success')
         return redirect(url_for('login'))
         
     return render_template('reset_password.html')
