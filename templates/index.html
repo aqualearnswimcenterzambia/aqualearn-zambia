@@ -9,147 +9,248 @@
         body {
             background-color: #f8f9fa;
             overflow-x: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
+        /* Sidebar Navigation */
         .sidebar {
             position: fixed;
             top: 0;
             left: 0;
             height: 100vh;
             width: 260px;
-            background: #0080ff;
+            background: #061c33;
             color: white;
-            padding: 20px;
+            padding: 25px 20px;
             display: flex;
             flex-direction: column;
+            z-index: 1000;
         }
         .sidebar .brand {
-            font-size: 1.25rem;
+            font-size: 1.3rem;
             font-weight: bold;
             margin-bottom: 2rem;
+            color: white;
         }
         .sidebar .brand span {
             font-size: 0.8rem;
             display: block;
-            opacity: 0.8;
+            opacity: 0.85;
+            font-weight: normal;
         }
         .sidebar nav a {
-            color: rgba(255,255,255,0.85);
+            color: rgba(255, 255, 255, 0.9);
             text-decoration: none;
             padding: 10px 15px;
             border-radius: 6px;
-            margin-bottom: 5px;
+            margin-bottom: 6px;
             display: block;
             font-weight: 500;
         }
         .sidebar nav a:hover, .sidebar nav a.active {
-            background: rgba(255,255,255,0.2);
+            background: rgba(22, 8, 8, 0.349);
             color: white;
         }
+        .sidebar-footer {
+            margin-top: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding-bottom: 10px;
+        }
+        .btn-custom-cyan {
+            background-color: #239219;
+            color: #000000;
+            font-weight: 600;
+            border: none;
+            border-radius: 20px;
+            padding: 8px 20px;
+            text-decoration: none;
+            text-align: center;
+        }
+        .btn-custom-cyan:hover {
+            background-color: #00b5b6;
+            color: #000000;
+        }
+        .btn-outline-custom {
+            border: 2px solid #ffffff;
+            color: #ffffff;
+            font-weight: 600;
+            border-radius: 20px;
+            padding: 8px 20px;
+            background: transparent;
+            text-decoration: none;
+            text-align: center;
+        }
+        .btn-outline-custom:hover {
+            background-color: rgba(50, 136, 39, 0.2);
+            color: #ffffff;
+        }
+
+        /* Main Content Layout */
         .main-content {
             margin-left: 260px;
-            padding: 30px;
+            padding: 30px 40px;
         }
+
+        /* Hero Banner */
         .hero-card {
             background: linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.25)), url("{{ url_for('static', filename='images/hero-bg.jpg.jpeg') }}") center/cover no-repeat;
-            border-radius: 15px;
+            border-radius: 20px;
             color: white;
-            padding: 80px 40px;
-            position: relative;
-            overflow: hidden;
+            padding: 60px 40px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+        .badge-location {
+            background: #cad3db;
+            color: white;
+            font-size: 0.85rem;
+            border-radius: 20px;
+            padding: 6px 16px;
+            display: inline-block;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        /* Program Cards */
+        .program-card {
+            background: white;
+            border-radius: 16px;
+            padding: 35px 25px;
+            height: 100%;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+            border: none;
+            text-align: center;
+        }
+        .program-card h5 {
+            color: #153555;
+        }
+
+        /* Glimpses Images */
+        .glimpse-img {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Contact Section */
+        .contact-card {
+            background: white;
+            border-radius: 16px;
+            padding: 25px 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+        }
+        .btn-whatsapp {
+            background-color: #25d366;
+            color: white;
+            font-weight: 600;
+            border-radius: 25px;
+            padding: 10px 24px;
+            border: none;
+            text-decoration: none;
+        }
+        .btn-whatsapp:hover {
+            background-color: #1eb956;
+            color: white;
         }
     </style>
 </head>
 <body>
 
     <!-- Sidebar Navigation -->
-    <div class="sidebar shadow-sm">
+    <div class="sidebar">
         <div class="brand">
             AQUALEARN
             <span>Swim Center Zambia</span>
         </div>
         <nav class="nav flex-column mb-auto">
-            <a href="{{ url_for('home') }}" class="active">🏠 Home</a>
-            <a href="#programs">🏊‍♂️ Our Programs</a>
-            <a href="#contact">📞 Contact Us</a>
-            {% if current_user %}
-                <a href="{{ url_for('dashboard') }}">📊 Dashboard</a>
-                <a href="{{ url_for('logout') }}" class="text-warning">🚪 Logout</a>
-            {% else %}
-                <a href="{{ url_for('login') }}">🔑 Login</a>
-                <a href="{{ url_for('register') }}">✨ Register</a>
-            {% endif %}
+            <a href="{{ url_for('home') }}" class="active">Home</a>
+            <a href="#programs">Our Programs</a>
+            <a href="#contact">Contact Us</a>
+            <!-- Manager Portal Link -->
+            <a href="{{ url_for('manager_portal') }}" class="text-info fw-semibold">Manager Portal</a>
         </nav>
+
+        <div class="sidebar-footer">
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('dashboard') }}" class="btn-custom-cyan">Dashboard</a>
+                <a href="{{ url_for('logout') }}" class="btn-outline-custom">Logout</a>
+            {% else %}
+                <a href="{{ url_for('login') }}" class="btn-custom-cyan">Sign In</a>
+                <a href="{{ url_for('register') }}" class="btn-outline-custom">Register</a>
+            {% endif %}
+        </div>
     </div>
 
     <!-- Main Content Area -->
     <div class="main-content">
         <div class="container-fluid">
-            <!-- Hero Card Section -->
-            <div class="hero-card shadow-lg mb-5 text-center">
-                <div class="mb-3">
-                    <span class="badge bg-info text-dark px-3 py-2 fw-semibold">Millennium Village, Lusaka</span>
-                </div>
-                <h1 class="display-5 fw-bold mb-3">Aqualearn Swim Center</h1>
-                <p class="lead mb-4 mx-auto" style="max-width: 600px;">Life is better when you are swimming! Take the plunge for fitness and fun with professional coaching.</p>
-                <a href="{{ url_for('register') }}" class="btn btn-info btn-lg text-dark fw-bold px-4 py-2 rounded-pill shadow">Book a Class Now</a>
+            
+            <!-- Hero Section -->
+            <div class="hero-card mb-5">
+                <span class="badge-location">Millennium Village, Lusaka</span>
+                <h1 class="fw-bold display-4 mb-3">Aqualearn Swim Center</h1>
+                <p class="lead max-w-600 mx-auto mb-4" style="font-size: 1.1rem; opacity: 0.95;">
+                    Life is better when you are swimming! Take the plunge for fitness and fun with professional coaching.
+                </p>
+                <a href="{{ url_for('register') }}" class="btn-custom-cyan px-4 py-2 d-inline-block shadow">Book a Class Now</a>
             </div>
 
             <!-- Our Programs Section -->
-            <div id="programs" class="mb-5 text-center">
-                <h3 class="fw-bold text-primary mb-4">Our Programs</h3>
-                <div class="row g-4 text-start">
+            <div id="programs" class="mb-5">
+                <h3 class="fw-bold text-secondary mb-4 text-center">Our Programs</h3>
+                <div class="row g-4">
                     <div class="col-md-4">
-                        <div class="card border-0 shadow-sm h-100 p-4 text-center">
-                            <h5 class="fw-bold text-primary mb-3">BABY & TODDLER</h5>
-                            <p class="text-muted small">Safety is our main priority, equipping them with water confidence and survival skills.</p>
+                        <div class="program-card">
+                            <h5 class="fw-bold text-uppercase mb-3">BABY & TODDLER</h5>
+                            <p class="text-muted small">safety is our main prioty, eqipting them with water confendence and savival skills.</p>
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div class="card border-0 shadow-sm h-100 p-4 text-center">
-                            <h5 class="fw-bold text-primary mb-3">KIDS LEARN-TO-SWIM</h5>
+                        <div class="program-card">
+                            <h5 class="fw-bold text-uppercase mb-3">KIDS LEARN-TO-SWIM</h5>
                             <p class="text-muted small">Stroke development, essential water safety, and confidence building under expert guidance.</p>
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div class="card border-0 shadow-sm h-100 p-4 text-center">
-                            <h5 class="fw-bold text-primary mb-3">DEVELOPMENTAL AND ADVANCE</h5>
+                        <div class="program-card">
+                            <h5 class="fw-bold text-uppercase mb-3">DEVELOPMENTAL AND ADVANCE</h5>
                             <p class="text-muted small">Lap swimming, stroke correction, and intensive cardio workouts tailored to your goals.</p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Glimpses of Our Pool & Training -->
+            <!-- Glimpses of Our Pool & Training Section -->
             <div class="mb-5">
-                <h3 class="fw-bold text-primary mb-4 text-center">Glimpses of Our Pool & Training</h3>
+                <h3 class="fw-bold text-secondary mb-4 text-center">Glimpses of Our Pool & Training</h3>
                 <div class="row g-4">
                     <div class="col-md-4">
-                        <div class="card shadow-sm border-0 h-100">
-                            <img src="{{ url_for('static', filename='images/about-pool.jpg.jpeg') }}" class="card-img-top rounded" alt="Pool View" style="height: 220px; object-fit: cover;">
-                        </div>
+                        <img src="{{ url_for('static', filename='images/about-pool.jpg.jpeg') }}" class="glimpse-img" alt="Pool View">
                     </div>
                     <div class="col-md-4">
-                        <div class="card shadow-sm border-0 h-100">
-                            <img src="{{ url_for('static', filename='images/splash-fun.jpg.jpeg') }}" class="card-img-top rounded" alt="Training Session" style="height: 220px; object-fit: cover;">
-                        </div>
+                        <img src="{{ url_for('static', filename='images/splash-fun.jpg.jpeg') }}" class="glimpse-img" alt="Coaching Session">
                     </div>
                     <div class="col-md-4">
-                        <div class="card shadow-sm border-0 h-100">
-                            <img src="{{ url_for('static', filename='images/water-smile.jpg.jpeg') }}" class="card-img-top rounded" alt="Poolside Moment" style="height: 220px; object-fit: cover;">
-                        </div>
+                        <img src="{{ url_for('static', filename='images/water-smile.jpg.jpeg') }}" class="glimpse-img" alt="Swimmer Practice">
                     </div>
                 </div>
             </div>
 
             <!-- Get In Touch Section -->
-            <div id="contact" class="card border-0 shadow-sm p-4 mb-4">
-                <h4 class="fw-bold text-primary mb-3">Get In Touch</h4>
-                <p class="mb-2">📍 <strong>Location:</strong> Millennium Village, Lusaka[cite: 5]</p>
-                <p class="mb-3">📞 <strong>Coach Gideon:</strong> 0972810511[cite: 5]</p>
+            <div id="contact" class="contact-card d-flex justify-content-between align-items-center mb-4">
                 <div>
-                    <a href="https://wa.me/260972810511" target="_blank" class="btn btn-success fw-bold px-4">💬 Chat on WhatsApp</a>
+                    <h4 class="fw-bold text-secondary mb-3">Get In Touch</h4>
+                    <p class="mb-1 text-muted small">📍 Location: Millennium Village, Lusaka</p>
+                    <p class="mb-0 text-muted small">📞 Coach Gideon: 0972810511</p>
+                </div>
+                <div>
+                    <a href="https://wa.me/260972810511" target="_blank" class="btn-whatsapp">Chat on WhatsApp</a>
                 </div>
             </div>
+
         </div>
     </div>
 
