@@ -15,7 +15,7 @@ db.init_app(app)
 from models import User, Child, Attendance, CoachLog
 
 with app.app_context():
-    # Automatically drop and recreate tables to ensure all new columns and relationships match cleanly
+    # Automatically recreate database tables on startup to fix schema mismatches
     db.drop_all()
     db.create_all()
 
@@ -50,11 +50,13 @@ def dashboard():
             logs = CoachLog.query.filter_by(coach_id=user.id).order_by(CoachLog.id.desc()).all()
             day_total = sum(log.amount_expected for log in logs) if logs else 0.0
             return render_template('dashboard_coach.html', user=user, clients=clients, logs=logs, day_total=day_total)
+            
         elif user.role == 'manager':
             clients = User.query.filter_by(role='client').all()
             coaches = User.query.filter_by(role='coach').all()
             logs = CoachLog.query.order_by(CoachLog.id.desc()).all()
             return render_template('dashboard_manager.html', user=user, clients=clients, coaches=coaches, logs=logs)
+            
         else:
             attendances = Attendance.query.filter_by(user_id=user.id).order_by(Attendance.id.desc()).all()
             return render_template('dashboard_client.html', user=user, attendances=attendances)
