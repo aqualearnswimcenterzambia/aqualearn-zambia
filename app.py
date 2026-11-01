@@ -39,7 +39,6 @@ def dashboard():
         else:
             return render_template('dashboard_client.html', user=user)
     except Exception as e:
-        # This will show us the exact error on your screen instead of a generic 500 page!
         return f"""
         <div style="padding: 40px; font-family: sans-serif; background: #fff3f3; color: #900;">
             <h3>Template Rendering Error Caught:</h3>
@@ -48,6 +47,35 @@ def dashboard():
             <a href="{url_for('logout')}">Log Out</a>
         </div>
         """
+
+@app.route('/coach/add-entry', methods=['GET', 'POST'])
+def coach_add_entry():
+    user = User.query.get(session.get('user_id')) if 'user_id' in session else None
+    if not user or user.role != 'coach':
+        flash('Unauthorized access.', 'danger')
+        return redirect(url_for('login'))
+    
+    if request.method == 'POST':
+        flash('Entry added successfully!', 'success')
+        return redirect(url_for('dashboard'))
+        
+    return render_template('dashboard_coach.html', user=user)
+
+@app.route('/manager/action', methods=['GET', 'POST'])
+def manager_action():
+    user = User.query.get(session.get('user_id')) if 'user_id' in session else None
+    if not user or user.role != 'manager':
+        flash('Unauthorized access.', 'danger')
+        return redirect(url_for('login'))
+    return redirect(url_for('dashboard'))
+
+@app.route('/client/action', methods=['GET', 'POST'])
+def client_action():
+    user = User.query.get(session.get('user_id')) if 'user_id' in session else None
+    if not user or user.role != 'client':
+        flash('Unauthorized access.', 'danger')
+        return redirect(url_for('login'))
+    return redirect(url_for('dashboard'))
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
