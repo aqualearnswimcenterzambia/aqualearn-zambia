@@ -1,9 +1,10 @@
 import os
 import random
+from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import db, User
+from models import db, User, Attendance, CoachLog
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'aqualearn-secret-key-zambia')
@@ -33,11 +34,17 @@ def dashboard():
     
     try:
         if user.role == 'coach':
-            return render_template('dashboard_coach.html', user=user)
+            clients = User.query.filter_by(role='client').all()
+            logs = CoachLog.query.filter_by(coach_id=user.id).order_by(CoachLog.id.desc()).all()
+            day_total = sum(log.amount_expected for log in logs) if logs else 0.0
+            return render_template('dashboard_coach.html', user=user, clients=clients, logs=logs, day_total=day_total)
         elif user.role == 'manager':
-            return render_template('dashboard_manager.html', user=user)
+            clients = User.query.filter_by(role='client').all()
+            logs = CoachLog.query.order_by(CoachLog.id.desc()).all()
+            return render_template('dashboard_manager.html', user=user, clients=clients, logs=logs)
         else:
-            return render_template('dashboard_client.html', user=user)
+            attendances = Attendance.query.filter_by(user_id=user.id).order_by(Attendance.id.desc()).all()
+            return render_template('dashboard_client.html', user=user, attendances=attendances)
     except Exception as e:
         return f"""
         <div style="padding: 40px; font-family: sans-serif; background: #fff3f3; color: #900;">
@@ -48,33 +55,82 @@ def dashboard():
         </div>
         """
 
-@app.route('/coach/add-entry', methods=['GET', 'POST'])
+@app.route('/coach/add-entry', methods=['POST'])
 def coach_add_entry():
     user = User.query.get(session.get('user_id')) if 'user_id' in session else None
     if not user or user.role != 'coach':
         flash('Unauthorized access.', 'danger')
         return redirect(url_for('login'))
     
-    if request.method == 'POST':
-        flash('Entry added successfully!', 'success')
-        return redirect(url_for('dashboard'))
-        
-    return render_template('dashboard_coach.html', user=user)
+    client_name = request.form.get('client_name', '').strip()
+    session_time = request.form.get('session_time', '').strip()
+    amount_expected = request.form.get('amount_expected', '0')
+    
+    try:
+        amount_expected = float(amount_expected)
+    except (ValueError, TypeError):
+        amount_expected = 0.0
 
-@app.route('/manager/action', methods=['GET', 'POST'])
-def manager_action():
+    if not client_name or not session_time:
+        flash('Please fill in all required fields.', 'danger')
+        return redirect(url_for('dashboard'))
+
+    today_str = datetime.now().strftime('%B %d, %Y')
+    new_log = CoachLog(
+        coach_id=user.id,
+        client_name=client_name,
+        session_time=session_time,
+        date_logged=today_str,
+        amount_expected=amount_expected
+    )
+    
+    db.session.add(new_log)
+    db.session.commit()
+    flash('Coaching entry added successfully!', 'success')
+    
+    return redirect(url_for('dashboard'))
+
+@app.route('/adjust-sessions/<int:user_id>', methods=['POST'])
+def adjust_sessions(user_id):
     user = User.query.get(session.get('user_id')) if 'user_id' in session else None
     if not user or user.role != 'manager':
         flash('Unauthorized access.', 'danger')
         return redirect(url_for('login'))
+    
+    client_user = User.query.get_or_404(user_id)
+    action = request.form.get('action')
+    
+    if action == 'add':
+        client_user.remaining_sessions += 1
+        client_user.total_sessions += 1
+        flash(f'Added 1 session for {client_user.username}.', 'success')
+    elif action == 'subtract':
+        if client_user.remaining_sessions > 0:
+            client_user.remaining_sessions -= 1
+            flash(f'Subtracted 1 session for {client_user.username}.', 'success')
+        else:
+            flash(f'{client_user.username} has 0 remaining sessions.', 'warning')
+            
+    db.session.commit()
     return redirect(url_for('dashboard'))
 
-@app.route('/client/action', methods=['GET', 'POST'])
-def client_action():
+@app.route('/mark-attendance', methods=['POST'])
+def mark_attendance():
     user = User.query.get(session.get('user_id')) if 'user_id' in session else None
     if not user or user.role != 'client':
         flash('Unauthorized access.', 'danger')
         return redirect(url_for('login'))
+    
+    if user.remaining_sessions > 0:
+        user.remaining_sessions -= 1
+        today_str = datetime.now().strftime('%B %d, %Y - %H:%M')
+        new_attendance = Attendance(user_id=user.id, date_marked=today_str)
+        db.session.add(new_attendance)
+        db.session.commit()
+        flash('Attendance marked successfully! 1 session deducted.', 'success')
+    else:
+        flash('You have no remaining sessions left.', 'warning')
+        
     return redirect(url_for('dashboard'))
 
 @app.route('/register', methods=['GET', 'POST'])
