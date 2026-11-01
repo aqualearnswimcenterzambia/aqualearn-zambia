@@ -89,12 +89,16 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        # Accept phone, username, or identifier input from the form
-        identifier = request.form.get('phone') or request.form.get('username') or request.form.get('identifier')
         password = request.form.get('password')
+        user = None
         
-        # Check against both phone and username columns in the database
-        user = User.query.filter((User.phone == identifier) | (User.username == identifier)).first()
+        # Scan through all submitted form fields to find a matching user by phone or username
+        for key, val in request.form.items():
+            if key != 'password' and val:
+                found_user = User.query.filter((User.phone == val) | (User.username == val)).first()
+                if found_user:
+                    user = found_user
+                    break
         
         if user and check_password_hash(user.password_hash, password):
             session['user_id'] = user.id
