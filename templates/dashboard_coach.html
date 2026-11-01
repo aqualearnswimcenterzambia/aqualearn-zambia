@@ -8,7 +8,9 @@
     <style>
         body {
             background-color: #f8f9fa;
-            overflow-x: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
         }
         .sidebar {
             position: fixed;
@@ -16,66 +18,98 @@
             left: 0;
             height: 100vh;
             width: 260px;
-            background: #198754;
+            background: #0b2545;
             color: white;
-            padding: 20px;
+            padding: 25px 20px;
             display: flex;
             flex-direction: column;
+            z-index: 1000;
         }
         .sidebar .brand {
-            font-size: 1.25rem;
+            font-size: 1.3rem;
             font-weight: bold;
             margin-bottom: 2rem;
+            color: white;
         }
         .sidebar .brand span {
             font-size: 0.8rem;
             display: block;
-            opacity: 0.8;
+            opacity: 0.85;
+            font-weight: normal;
         }
         .sidebar nav a {
-            color: rgba(255,255,255,0.85);
+            color: rgba(255, 255, 255, 0.9);
             text-decoration: none;
             padding: 10px 15px;
             border-radius: 6px;
-            margin-bottom: 5px;
+            margin-bottom: 6px;
             display: block;
             font-weight: 500;
         }
         .sidebar nav a:hover, .sidebar nav a.active {
-            background: rgba(255,255,255,0.15);
+            background: rgba(255, 255, 255, 0.15);
             color: white;
         }
         .main-content {
             margin-left: 260px;
-            padding: 30px;
-        }
-        .coach-banner {
-            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url("{{ url_for('static', filename='images/about-pool.jpg.jpeg') }}") center/cover no-repeat;
-            border-radius: 15px;
-            color: white;
             padding: 40px;
+        }
+        .card-custom {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+            border: none;
+        }
+        .btn-custom-cyan {
+            background-color: #00d2d3;
+            color: #000000;
+            font-weight: 600;
+            border: none;
+            border-radius: 20px;
+            padding: 10px 25px;
+        }
+        .btn-custom-cyan:hover {
+            background-color: #00b5b6;
+            color: #000000;
+        }
+
+        /* MOBILE PORTRAIT RESPONSIVE FIX */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: relative;
+                width: 100%;
+                height: auto;
+                padding: 20px;
+            }
+            .main-content {
+                margin-left: 0;
+                padding: 20px 15px;
+            }
         }
     </style>
 </head>
 <body>
 
     <!-- Sidebar Navigation -->
-    <div class="sidebar shadow-sm">
+    <div class="sidebar">
         <div class="brand">
             AQUALEARN
-            <span>Coach Portal</span>
+            <span>Coach Dashboard</span>
         </div>
         <nav class="nav flex-column mb-auto">
-            <a href="{{ url_for('home') }}">🏠 Home</a>
-            <a href="{{ url_for('dashboard') }}" class="active">📊 Coach Dashboard</a>
-            <a href="{{ url_for('logout') }}" class="text-warning">🚪 Logout</a>
+            <a href="{{ url_for('home') }}">Home</a>
+            <a href="{{ url_for('dashboard') }}" class="active">Coach Portal</a>
         </nav>
+        <div class="mt-auto pt-3">
+            <a href="{{ url_for('logout') }}" class="btn btn-outline-light w-100 rounded-pill">Logout</a>
+        </div>
     </div>
 
-    <!-- Main Content Area -->
+    <!-- Main Content -->
     <div class="main-content">
         <div class="container-fluid">
-            <!-- Flash Messages -->
+            
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}
@@ -87,76 +121,74 @@
                 {% endif %}
             {% endwith %}
 
-            <!-- Local Photo Banner Header -->
-            <div class="coach-banner shadow mb-4">
-                <h2>Welcome, Coach {{ user.username }}</h2>
-                <p class="mb-0">Manage training sessions, log daily activities, and track expected coaching metrics.</p>
+            <div class="card-custom mb-4">
+                <h2 class="fw-bold mb-1">Coach Overview</h2>
+                <p class="text-muted">Logged in as: <strong>{{ user.username }}</strong></p>
+                <hr>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5 class="text-secondary">Expected Today's Total</h5>
+                        <h2 class="fw-bold text-primary">K{{ "%.2f"|format(day_total) }}</h2>
+                    </div>
+                </div>
             </div>
 
-            <!-- Log Training Session Form -->
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-success text-white fw-bold">Log Training Session</div>
-                <div class="card-body">
-                    <form action="{{ url_for('coach_add_entry') }}" method="POST" class="row g-3">
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold">Client Name</label>
-                            <select name="client_name" class="form-select" required>
-                                <option value="" disabled selected>Select client...</option>
-                                {% for client in clients %}
-                                    <option value="{{ client.username }}">{{ client.username }} ({{ client.phone }})</option>
+            <!-- Add Log Entry Form -->
+            <div class="card-custom mb-4">
+                <h4 class="fw-bold mb-3">Log Coaching Session</h4>
+                <form action="{{ url_for('coach_add_entry') }}" method="POST" class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Client Name</label>
+                        <input type="text" name="client_name" class="form-control" placeholder="Enter client full name" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Session Time</label>
+                        <input type="text" name="session_time" class="form-control" placeholder="e.g. 10:00 AM - 11:00 AM" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Amount Expected (ZMW)</label>
+                        <input type="number" step="0.01" name="amount_expected" class="form-control" placeholder="0.00">
+                    </div>
+                    <div class="col-12 text-end">
+                        <button type="submit" class="btn btn-custom-cyan shadow-sm w-100 w-md-auto">Save Log Entry</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Logged Sessions Table -->
+            <div class="card-custom">
+                <h4 class="fw-bold mb-3">Recent Coaching Logs</h4>
+                {% if logs %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Client Name</th>
+                                    <th>Session Time</th>
+                                    <th>Amount Expected</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in logs %}
+                                    <tr>
+                                        <td>{{ log.date_logged }}</td>
+                                        <td>{{ log.client_name }}</td>
+                                        <td>{{ log.session_time }}</td>
+                                        <td>K{{ "%.2f"|format(log.amount_expected) }}</td>
+                                    </tr>
                                 {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold">Session Time</label>
-                            <input type="text" name="session_time" class="form-control" placeholder="e.g. 10:00 AM - 11:00 AM" required>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold">Amount Expected (ZMW)</label>
-                            <input type="number" step="0.01" name="amount_expected" class="form-control" value="0.00" required>
-                        </div>
-                        <div class="col-12">
-                            <button type="submit" class="btn btn-success fw-bold px-4">Save Coaching Entry</button>
-                        </div>
-                    </form>
-                </div>
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-0">No coaching logs added yet.</p>
+                {% endif %}
             </div>
 
-            <!-- Coaching Logs Table -->
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-dark text-white d-flex justify-content-between align-items: center;">
-                    <span class="fw-bold">Recorded Coaching Logs</span>
-                    <span class="badge bg-success fs-6">Total Expected: ZMW {{ "%.2f"|format(day_total) }}</span>
-                </div>
-                <div class="card-body table-responsive">
-                    <table class="table table-striped align-middle mb-0">
-                        <thead>
-                            <tr>
-                                <th>Date Logged</th>
-                                <th>Client</th>
-                                <th>Time</th>
-                                <th>Expected Amount</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for log in logs %}
-                            <tr>
-                                <td>{{ log.date_logged }}</td>
-                                <td>{{ log.client_name }}</td>
-                                <td>{{ log.session_time }}</td>
-                                <td>ZMW {{ "%.2f"|format(log.amount_expected) }}</td>
-                            </tr>
-                            {% else %}
-                            <tr>
-                                <td colspan="4" class="text-center text-muted py-4">No training entries logged yet.</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
