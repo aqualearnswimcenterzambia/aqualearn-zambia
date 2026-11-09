@@ -15,8 +15,7 @@ db.init_app(app)
 from models import User, Child, Attendance, CoachLog
 
 with app.app_context():
-    # Automatically recreate tables on startup to apply schema structure cleanly
-    db.drop_all()
+    # Persistent configuration: create tables if missing without erasing existing data
     db.create_all()
 
 @app.context_processor
@@ -204,7 +203,6 @@ def register():
 
         hashed_password = generate_password_hash(password)
         
-        # Check if user already exists by phone number
         user = User.query.filter_by(phone=phone).first()
         
         if not user:
